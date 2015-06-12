@@ -1,0 +1,124 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  min-width: 400px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#homeStoryImage {
+	max-width: 95%;
+	height: auto;
+}
+
+#leftNav {
+	/* Stupid FrontRunner Wifi... verify that I don't need this */
+	/*margin-top: 15px;*/
+}
+
+.signupButton {
+	margin-top: 10px;
+}
+
+.user-form-control {
+	margin-top: 10px;
+}
+
+#deathToll {
+	text-align: center;
+}
+
+.datepicker {
+	margin-top: 0;
+}
+
+.errorMessage {
+	padding-top: 5px;
+}
+
+.pageErrorsDiv {
+	text-align: center;
+}
+
+#indexTopStory {
+	text-align: center;
+}
+
+#storyImageDiv {
+	text-align: center;
+}
+
+#storyImage {
+	max-width: 100%;
+}
+
+#storySummary {
+	margin-top: 10px;
+}
+
+.pageHeader {
+	padding-top: 0;
+	margin-top: 0;
+}
+
+.pageHeader h1 {
+	padding-top: 0;
+	margin-top: 0;
+}
+
+.navButton {
+	cursor: pointer;
+}
+
+.userLink a {
+	color: #5CD166;
+}
+
+.userLinkActive a {
+	color: white;
+	background-color: #159620;
+}
+
+.userLinkActive a:focus {
+	color: white;
+	background-color: #159620 !important;
+}
+
+.formButton {
+	margin-top: 5px;
+}
+
+#updateProfileButton {
+	margin-top: 20px;
+	font-size: 1.75em;
+}
+
+.keyLabel {
+	color: transparent;
+}
+
+.successColorLabel {
+	background-color: #5cb85c;
+}
+
+.infoColorLabel {
+	background-color: #5bc0de;
+}
+
+#financialGoalProgressBar {
+	margin-bottom: 10px;
+}
+
+.legendRow {
+	padding-top: 5px;
+}
+
+#usageUpdateTable tr td {
+	padding: 10px;
+}
+
+#updateUsageContentArea {
+	margin: 15px 0 25px 0;
+}
