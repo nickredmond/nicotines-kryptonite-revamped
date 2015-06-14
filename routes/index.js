@@ -18,6 +18,9 @@ var Dashboard = mongoose.model('Dashboard');
 var TobaccoPricing = mongoose.model('TobaccoPricing');
 var NicotineUsage = mongoose.model('NicotineUsage');
 
+var Forum = mongoose.model('Forum');
+var Post = mongoose.model('Post');
+
 var nicotineTypeMappings = {};
 nicotineTypeMappings["Cigarettes"] = "cigarette";
 nicotineTypeMappings["Smokeless Tobacco"] = "smokeless";
@@ -252,17 +255,17 @@ router.param('story', function(request, response, next, id){
 // });
 
 //--- DEV URL - COMMENT OUT WHEN NOT IN USE ---//
-router.post('/newTobaccoPricing', function(request, response, next){
-	TobaccoPricing.create({
-		tobaccoType: request.body.tobaccoType,
-		brandName: request.body.brandName,
-		state: request.body.state,
-		averagePrice: request.body.averagePrice
-	}, function(err, tobaccoPricing){
-		if (err) { return next(err); }
-		response.json({tobaccoPricing: tobaccoPricing});
-	});
-});
+// router.post('/newTobaccoPricing', function(request, response, next){
+// 	TobaccoPricing.create({
+// 		tobaccoType: request.body.tobaccoType,
+// 		brandName: request.body.brandName,
+// 		state: request.body.state,
+// 		averagePrice: request.body.averagePrice
+// 	}, function(err, tobaccoPricing){
+// 		if (err) { return next(err); }
+// 		response.json({tobaccoPricing: tobaccoPricing});
+// 	});
+// });
 
 router.get('/topStory', function(request, response, next){
 	Story.findOne({'isTopStory': true})
@@ -325,8 +328,8 @@ function handleLogin(user, response, next, info){
 
 				var hasFinancialGoal = user.dashboard.financialGoal;
 				
-				return response.json({token: user.generateJWT(),
-					id: user._id, 
+				return response.json({
+					token: user.generateJWT(),
 					dashboard: {
 						greeting: "Welcome",
 						firstName: user.name,
@@ -387,11 +390,11 @@ function calculateMoneySaved(user){
 }	
 
 router.post('/dashboard', function(request, response, next){
-	authenticationMethod = (request.body.id && request.body.token) ? 'token' : 'local'
+	authenticationMethod = request.body.token ? 'token' : 'local'
 	var isUserMissingFields = function(authMethod, req){
 		return (authMethod === 'local') ? 
 			(!(req.body.username || req.body.email) || !req.body.password) :
-			!(req.body.id && req.body.token);
+			!req.body.token;
 	};
 
 	if (isUserMissingFields(authenticationMethod, request)) {
@@ -409,7 +412,7 @@ router.post('/dashboard', function(request, response, next){
 });
 
 router.post('/tobaccoCost', function(request, response, next){
-	if (!request.body.id || !request.body.token){
+	if (!request.body.token){
 		return response.status(400).json({message: "Could not authenticate user. Please log in again."});
 	}
 
@@ -437,6 +440,21 @@ router.post('/tobaccoCost', function(request, response, next){
 	})(request, response, next);
 });
 
+function authenticateWithToken(request, response, next, callback){
+	if (!request.body.token){
+		return response.status(403).json({message: "Could not authenticate user. Please log in again."});
+	}
+
+	passport.authenticate('token', function(err, user, info){
+		if (err){
+			return next(err);
+		}
+		else {
+			return callback(user, info);
+		}
+	})(request, response, next);
+}
+
 router.post('/updateTobaccoCost', function(request, response, next){
 	var PRICE_PATTERN = /^\d+(?:\.\d{1,2})?$/;
 	var hasSentResponse = false;
@@ -454,88 +472,79 @@ router.post('/updateTobaccoCost', function(request, response, next){
 		return (req.body.financialGoalItem && req.body.financialGoalCost);
 	};
 
-	if (!request.body.id || ! request.body.token){
-		return sendResponse(403, "Could not authenticate user. Please log in again.");
-	}
+	return authenticateWithToken(request, response, next, function(user, info){
+		var isUpdatingTobaccoPrices = false;
 
-	passport.authenticate('token', function(err, user, info){
-		if (err){
-			return next(err);
-		}
-		else {
-			var isUpdatingTobaccoPrices = false;
-
-			if (request.body.cigarettePrice){
-				if (!PRICE_PATTERN.test(request.body.cigarettePrice)){
-					return sendResponse(400, "Cigarette price must be a currency value (e.g. '2.31' or '2')");
-				}
-				else {
-					isUpdatingTobaccoPrices = true;
-					user.setCigarettePrice(request.body.cigarettePrice);
-				}
+		if (request.body.cigarettePrice){
+			if (!PRICE_PATTERN.test(request.body.cigarettePrice)){
+				return sendResponse(400, "Cigarette price must be a currency value (e.g. '2.31' or '2')");
 			}
-			if (request.body.dipPrice){
-				if (!PRICE_PATTERN.test(request.body.dipPrice)){
-					return sendResponse(400, "Smokeless tobacco price must be a currency value (e.g. '4.87' or '5')");
-				}
+			else {
 				isUpdatingTobaccoPrices = true;
-				user.setDipPrice(request.body.dipPrice);
+				user.setCigarettePrice(request.body.cigarettePrice);
 			}
-			if (request.body.cigarPrice){
-				if (!PRICE_PATTERN.test(request.body.cigarPrice)){
-					return sendResponse(400, "Cigar price must be a currency value (e.g. '3.90' or '3.9')");
-				}
-				else {
-					isUpdatingTobaccoPrices = true;
-					user.setCigarPrice(request.body.cigarPrice);
-				}
+		}
+		if (request.body.dipPrice){
+			if (!PRICE_PATTERN.test(request.body.dipPrice)){
+				return sendResponse(400, "Smokeless tobacco price must be a currency value (e.g. '4.87' or '5')");
 			}
-			if (isUpdatingDateQuit(request, user)){
-				user.dashboard.dateQuit = request.body.dateQuit;
-				user.dashboard.save(function(error){
-					if (error) {return next(error); }
-				});
+			isUpdatingTobaccoPrices = true;
+			user.setDipPrice(request.body.dipPrice);
+		}
+		if (request.body.cigarPrice){
+			if (!PRICE_PATTERN.test(request.body.cigarPrice)){
+				return sendResponse(400, "Cigar price must be a currency value (e.g. '3.90' or '3.9')");
 			}
-			if (isUpdatingFinancialGoal(request, user)){
-				if (!PRICE_PATTERN.test(request.body.financialGoalCost)){
-					return sendResponse(400, "Financial goal cost must be a currency value (e.g. '150' or '1532.47')");
-				}
-				else {
-					user.dashboard.financialGoal = request.body.financialGoalItem;
-					user.dashboard.financialGoalCost = request.body.financialGoalCost;
-					user.dashboard.save(function(error){
-						if (error) {return next(error);}
-					});
-				}
+			else {
+				isUpdatingTobaccoPrices = true;
+				user.setCigarPrice(request.body.cigarPrice);
 			}
-			if (request.body.nicotineUsages){
-				for (var i = 0; i < request.body.nicotineUsages.length; i++){
-					var usageInfo = request.body.nicotineUsages[i];
-					usageInfo.nicotineType = nicotineTypeMappings[usageInfo.nicotineType];
-
-					NicotineUsage.create({
-						dateUsed: usageInfo.date,
-						nicotineType: usageInfo.nicotineType,
-						quantityUsed: usageInfo.quantity
-					}, function(err, usage){
-						if (err) { return next(err); }
-
-						user.nicotineUsages.push(usage);
-						user.save(function(err, user){
-							if (err) {return next(err);}
-						});
-					});
-				}
-			}
-
-
-			user.save(function(err){
-				if (err) { return next(err); }
-
-				sendResponse(200, "Your information has been updated!");
+		}
+		if (isUpdatingDateQuit(request, user)){
+			user.dashboard.dateQuit = request.body.dateQuit;
+			user.dashboard.save(function(error){
+				if (error) {return next(error); }
 			});
 		}
-	})(request, response, next);
+		if (isUpdatingFinancialGoal(request, user)){
+			if (!PRICE_PATTERN.test(request.body.financialGoalCost)){
+				return sendResponse(400, "Financial goal cost must be a currency value (e.g. '150' or '1532.47')");
+			}
+			else {
+				user.dashboard.financialGoal = request.body.financialGoalItem;
+				user.dashboard.financialGoalCost = request.body.financialGoalCost;
+				user.dashboard.save(function(error){
+					if (error) {return next(error);}
+				});
+			}
+		}
+		if (request.body.nicotineUsages){
+			for (var i = 0; i < request.body.nicotineUsages.length; i++){
+				var usageInfo = request.body.nicotineUsages[i];
+				usageInfo.nicotineType = nicotineTypeMappings[usageInfo.nicotineType];
+
+				NicotineUsage.create({
+					dateUsed: usageInfo.date,
+					nicotineType: usageInfo.nicotineType,
+					quantityUsed: usageInfo.quantity
+				}, function(err, usage){
+					if (err) { return next(err); }
+
+					user.nicotineUsages.push(usage);
+					user.save(function(err, user){
+						if (err) {return next(err);}
+					});
+				});
+			}
+		}
+
+
+		user.save(function(err){
+			if (err) { return next(err); }
+
+			sendResponse(200, "Your information has been updated!");
+		});
+	});
 });
 
 router.get('/nrtBrands', function(request, response, next){
@@ -561,5 +570,81 @@ router.get('/nrtBrands', function(request, response, next){
 	}
 	else {
 		return response.json({brandNames: null});
+	}
+});
+
+function forumIndex(isAuthenticated, response, next){
+	Forum.find().deepPopulate('topics.comments').exec(function(err, forums){
+		if (err){ return next(err); }
+
+		var forumInfos = [];
+
+		for (var i = 0; i < forums.length; i++){
+			var nextForum = forums[i];
+
+			var numberPosts = 0;
+			var latestPost = {
+				date: null,
+				author: null
+			}
+
+			for (var j = 0; j < nextForum.topics.length; j++){
+				numberPosts += 1;
+				var nextTopic = nextForum.topics[j];
+
+				if (!latestPost.date || latestPost.date < nextTopic.date_created){
+					latestPost.date = nextTopic.date_created;
+					latestPost.author = nextTopic.creator;
+				}
+
+				for (var k = 0; k < nextTopic.comments.length; k++){
+					numberPosts += 1;
+					var nextComment = nextTopic.comments[k];
+
+					if (latestPost.date < nextComment.date_created){
+						latestPost.date = nextComment.date_created;
+						latestPost.author = nextComment.creator;
+					}
+
+					if (nextComment.comments.length > 0){
+						for (var l = 0; l < nextComment.comments.length; l++){
+							numberPosts += 1;
+							var nextReply = nextComment.comments[l];
+
+							if (latestPost.date < nextReply.date_created){
+								latestPost.date = nextReply.date_created;
+								latestPost.author = nextReply.creator;
+							}
+						}
+					}
+				}
+			}
+
+			latestPost = latestPost.author ? latestPost : null;
+
+			var nextInfo = {
+				title: nextForum.title,
+				numberTopics: nextForum.topics.length,
+				numberPosts: numberPosts,
+				latestPost: latestPost
+			};
+			forumInfos.push(nextInfo);
+		}
+
+		var responseData = {
+			forumInfos: forumInfos,
+			isUserAuthenticated: isAuthenticated
+		};
+		return response.status(200).json(responseData);
+	});
+}
+
+router.post('/forum', function(request, response, next){
+	if (request.body.token){
+		authenticateWithToken(request, response, next, function(user, info){
+			forumIndex(true, response, next);
+		});
+	} else {
+		forumIndex(false, response, next);
 	}
 });

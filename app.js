@@ -13,6 +13,8 @@ require('./models/Dashboards');
 require('./models/TobaccoPricings');
 require('./models/Milestones'); 
 require('./models/NicotineUsages');
+require('./models/Forums');
+require('./models/Posts');
 require('./config/passport');
 
 var routes = require('./routes/index');
@@ -72,7 +74,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 //mongodb://localhost/kryptonite
-mongoose.connect(/*'mongodb://localhost/kryptonite'*/'mongodb://heroku_app36401245:qahtvfobpu504bc1hk77af091t@ds035557.mongolab.com:35557/heroku_app36401245', function(err){
+mongoose.connect('mongodb://localhost/kryptonite'/*'mongodb://heroku_nw9xd3vv:laldboi884bgja098m6sa1npom@ds045882.mongolab.com:45882/heroku_nw9xd3vv'*/, function(err){
   if (err) {
     console.log(err);
   }

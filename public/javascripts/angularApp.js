@@ -368,7 +368,7 @@ app.controller('TobaccoCostCtrl', [
 			$scope.financialGoalCost = tobaccoCostInfo.financialGoalCost;
 		};
 		
-		userInfo.getTobaccoCost(auth.getId(), auth.getToken(), $scope.tobaccoCostCallback);
+		userInfo.getTobaccoCost(auth.getToken(), $scope.tobaccoCostCallback);
 
 		$scope.updateProfile = function(){
 			var updateData = {
@@ -380,7 +380,6 @@ app.controller('TobaccoCostCtrl', [
 				financialGoalItem: $scope.financialGoalItem,
 				financialGoalCost: $scope.financialGoalCost,
 
-				id: auth.getId(),
 				token: auth.getToken()
 			};
 
@@ -416,6 +415,13 @@ app.controller('TobaccoCostCtrl', [
 		};
 	}
 ]);
+
+app.controller('ForumCtrl', [
+	'forumService',
+	'forumsInfo',
+	function(forumService, forumsInfo){
+		alert('that is just the best: ' + JSON.stringify(forumsInfo));
+}]);
 
 app.factory('stories', [
 	'$http',
@@ -504,9 +510,8 @@ app.factory('nav', ['$location', '$window', function($location, $window){
 app.factory('userInfo', ['$http', function($http){
 	var userInfo = {};
 
-	userInfo.getTobaccoCost = function(id, token, callback){
+	userInfo.getTobaccoCost = function(token, callback){
 		var user = {
-			id: id,
 			token: token
 		};
 		
@@ -543,15 +548,9 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	auth.saveToken = function(token){
 		$window.localStorage['nicotines-kryptonite-token'] = token;
 	};
-	auth.saveId = function(id){
-		$window.localStorage['user-id'] = id;
-	};
 	auth.getToken = function(){
 		return $window.localStorage['nicotines-kryptonite-token'];
 	};
-	auth.getId = function(){
-		return $window.localStorage['user-id'];
-	}
 	auth.isLoggedIn = function($q){
 		var token = auth.getToken();
 		var isAuthenticated = false;
@@ -578,7 +577,6 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	auth.register = function(user){
 		return $http.post('/register', user).success(function(data){
 			auth.saveToken(data.token);
-			auth.saveId(data.id);
 			auth.dashboard = data.dashboard;
 
 			if (auth.dashboard.cravingLevel < 0) {
@@ -590,7 +588,6 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 		return $http.post('/dashboard', user)
 					.success(function(data){
 						auth.saveToken(data.token);
-						auth.saveId(data.id);
 						auth.dashboard = data.dashboard;
 
 						if (auth.dashboard.cravingLevel < 0) {
@@ -602,12 +599,10 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 					});
 	};
 	auth.updateDashboard = function(){
-		var id = auth.getId();
 		var token = auth.getToken();
 
-		if (id && token){
+		if (token){
 			var user = {
-				id: id,
 				token: token
 			};
 			return auth.logIn(user);
@@ -615,10 +610,23 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	};
 	auth.logOut = function(){
 		$window.localStorage.removeItem('nicotines-kryptonite-token');
-		$window.localStorage.removeItem('user-id');
 	};
 
 	return auth;
+}]);
+
+app.factory('forumService', ['$http', function($http){
+	var service = {};
+
+	service.retrieveForumsInfo = function(token){
+		return $http.post('/forum', {token: token}).success(function(data){
+			alert('the data: ' + JSON.stingify(data));
+		}).error(function(err){
+			alert('the err: ' + err);
+		});
+	}
+
+	return service;
 }]);
 
 app.config([
@@ -627,7 +635,7 @@ app.config([
 	function($stateProvider, $urlRouterProvider){
 		$stateProvider.state('home', {
 			url: '/home',
-			templateUrl: '/home.html',
+			templateUrl: '/templates/home.php',
 			controller: 'HomeCtrl',
 			resolve: {
 				storyPromise: ['stories', function(stories){
@@ -638,12 +646,12 @@ app.config([
 		});
 		$stateProvider.state('signup', {
 			url: '/signup',
-			templateUrl: '/signup.html',
+			templateUrl: '/templates/signup.php',
 			controller: 'SignupCtrl'
 		});
 		$stateProvider.state('viewStory', {
 			url: '/stories/{id}',
-			templateUrl: '/viewStory.html',
+			templateUrl: '/templates/viewStory.php',
 			controller: 'StoriesCtrl',
 			resolve: {
 				story: ['$stateParams', 'stories', function($stateParams, stories){
@@ -653,7 +661,7 @@ app.config([
 		});
 		$stateProvider.state('dashboard', {
 			url: '/dashboard',
-			templateUrl: '/dashboard.html',
+			templateUrl: '/templates/dashboard.php',
 			controller: 'DashboardCtrl',
 			resolve: {
 				dashboard: ['auth', function(auth){
@@ -666,8 +674,19 @@ app.config([
 		});
 		$stateProvider.state('tobaccoCost', {
 			url: '/tobaccoCost',
-			templateUrl: '/tobaccoCost.html',
+			templateUrl: '/templates/profile.php',
 			controller: 'TobaccoCostCtrl'
+		});
+		$stateProvider.state('forum', {
+			url: '/forum',
+			templateUrl: '/templates/forumIndex.php',
+			controller: 'ForumCtrl',
+			resolve: {
+				forumsInfo: ['forumService', 'auth', function(forumService, auth){
+					alert('yolo swaggins');
+					return forumService.retrieveForumsInfo(auth.getToken());
+				}]
+			}
 		});
 
 		$urlRouterProvider.otherwise('home');
