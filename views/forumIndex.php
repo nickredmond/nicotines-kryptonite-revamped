@@ -1,10 +1,10 @@
 <table class="table">
-	<tr>
+	<th>
 		<td>Forum</td>
 		<td>Topics</td>
 		<td>Posts</td>
 		<td>Last Post</td>
-	<tr>
+	<th>
 	<tr ng-repeat="forumInfo in forumInfos">
 		<td><a ng-href="#/forum/{{ forumInfo._id }}">{{ forumInfo.title }}</a></td>
 		<td>{{ forumInfo.numberTopics }}</td>

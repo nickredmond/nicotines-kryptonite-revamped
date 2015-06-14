@@ -417,10 +417,12 @@ app.controller('TobaccoCostCtrl', [
 ]);
 
 app.controller('ForumCtrl', [
+	'$scope',
 	'forumService',
 	'forumsInfo',
-	function(forumService, forumsInfo){
-		alert('that is just the best: ' + JSON.stringify(forumsInfo));
+	function($scope, forumService, forumsInfo){
+		$scope.forumInfos = forumsInfo.data.forumInfos;
+		$scope.isAuthenticated = forumsInfo.data.isUserAuthenticated;
 }]);
 
 app.factory('stories', [
@@ -617,9 +619,9 @@ app.factory('forumService', ['$http', function($http){
 
 	service.retrieveForumsInfo = function(token){
 		return $http.post('/forum', {token: token}).success(function(data){
-			alert('the data: ' + JSON.stingify(data));
+			angular.copy(data, service.forumsInfo);
 		}).error(function(err){
-			alert('the err: ' + err);
+			alert('error this: ' + err);
 		});
 	}
 
@@ -680,7 +682,6 @@ app.config([
 			controller: 'ForumCtrl',
 			resolve: {
 				forumsInfo: ['forumService', 'auth', function(forumService, auth){
-					alert('yolo swaggins');
 					return forumService.retrieveForumsInfo(auth.getToken());
 				}]
 			}

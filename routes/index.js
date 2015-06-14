@@ -623,6 +623,7 @@ function forumIndex(isAuthenticated, response, next){
 			latestPost = latestPost.author ? latestPost : null;
 
 			var nextInfo = {
+				_id: nextForum._id,
 				title: nextForum.title,
 				numberTopics: nextForum.topics.length,
 				numberPosts: numberPosts,
