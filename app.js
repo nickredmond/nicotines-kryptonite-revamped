@@ -7,6 +7,10 @@ var bodyParser = require('body-parser');
 
 var mongoose = require('mongoose');
 var passport = require('passport');
+
+var app = express();
+var config = require('./config/config')[app.get('env')];
+
 require('./models/Users');
 require('./models/Stories');
 require('./models/Dashboards');
@@ -19,8 +23,6 @@ require('./config/passport');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-
-var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -73,8 +75,8 @@ app.use(function(err, req, res, next) {
 
 
 module.exports = app;
-//mongodb://localhost/kryptonite
-mongoose.connect('mongodb://localhost/kryptonite'/*'mongodb://heroku_nw9xd3vv:laldboi884bgja098m6sa1npom@ds045882.mongolab.com:45882/heroku_nw9xd3vv'*/, function(err){
+
+mongoose.connect(config.db, function(err){
   if (err) {
     console.log(err);
   }

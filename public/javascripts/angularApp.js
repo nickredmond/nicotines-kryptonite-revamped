@@ -593,9 +593,6 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 						if (auth.dashboard.cravingLevel < 0) {
 							auth.dashboard.cravingLevel = 0;
 						}
-					})
-					.error(function(error){
-						alert('Error occurred while logging in. Please log in again.');
 					});
 	};
 	auth.updateDashboard = function(){
