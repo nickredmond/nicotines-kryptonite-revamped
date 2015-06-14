@@ -3,8 +3,7 @@
     <h4 class="errorMessage">{{ errorMessage }}</h4>
   </div>
   <div class="page-header" style="margin-top: 0;">
-    <!-- add the apostophre when Im not devving anymore -->
-    <h1 style="margin-top: 0;">Nicotines Kryptonite<br /><small>Helping you help yourself</small></h1>
+    <h1 style="margin-top: 0;">Nicotine's Kryptonite<br /><small>Helping you help yourself</small></h1>
   </div>
   <div id="indexTopStory" class="jumbotron">
     <img id="homeStoryImage" ng-src="{{ homeStoryImageUri }}" id="homeStoryImage" class="img-rounded" alt="{{ homeStoryImageUri }}" />

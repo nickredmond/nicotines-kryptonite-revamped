@@ -122,3 +122,16 @@ a {
 #updateUsageContentArea {
 	margin: 15px 0 25px 0;
 }
+
+.ngActionLink:hover {
+	cursor: pointer;
+}
+
+#formUserAvatar {
+	height: 2.3em;
+	width: auto;
+}
+
+#newTopicTitle {
+	height: 2.18em;
+}

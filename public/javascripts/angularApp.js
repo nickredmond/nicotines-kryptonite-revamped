@@ -3,6 +3,8 @@ var MILLIS_PER_SECOND = 1000;
 var DEATH_UPDATE_INTERVAL = 10000;
 var EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+var USER_LINK_TEMPLATE = '#URL here:::link text here#'
+
 //--- HELPER FUNCTIONS ---//
 function populateStates(){
 	var statesList = [
@@ -88,7 +90,7 @@ function roundToTwoPlaces(value){
 }
 
 //--- ANGULAR APP CONSTRUCTION ---//
-var app = angular.module('nicotinesKryptonite', ['ui.router']);
+var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs']);
 
 app.controller('HomeCtrl', [
 	'$scope',
@@ -249,6 +251,7 @@ app.controller('NavCtrl', [
 	function($scope, $state, auth, signup, nav, userInfo){
 		$scope.beginSignup = function(){
 			$scope.errors = [];
+			nav.setActive('none');
 			signup.beginSignup();
 		};
 
@@ -420,9 +423,50 @@ app.controller('ForumCtrl', [
 	'$scope',
 	'forumService',
 	'forumsInfo',
-	function($scope, forumService, forumsInfo){
-		$scope.forumInfos = forumsInfo.data.forumInfos;
+	'$moment',
+	function($scope, forumService, forumsInfo, $moment){
 		$scope.isAuthenticated = forumsInfo.data.isUserAuthenticated;
+		var forumInfos = forumsInfo.data.forumInfos;
+
+		var moreInfos = [];
+
+		for (var i = 0; i < forumInfos.length; i++){
+			var nextInfo = forumInfos[i];
+			var finalDate = new Date(nextInfo.latestPost.date);
+
+			var timeSinceCreated = $moment(finalDate).fromNow();
+			nextInfo.timeSinceLastPost = timeSinceCreated;
+
+			moreInfos.push(nextInfo);
+		}
+
+		$scope.forumInfos = moreInfos;
+}]);
+
+app.controller('ForumPageCtrl', [
+	'$scope',
+	'auth',
+	'forumService',
+	'forumInfo',
+	function($scope, auth, forumService, forumInfo){
+		$scope.forum = forumInfo;
+		$scope.newTopic = {};
+
+		$scope.addLinkTemplate = function(){
+			document.getElementById('newTopicContentArea').value += ' ' + USER_LINK_TEMPLATE;
+		};
+		$scope.cancelTopicCreate = function(){
+			$scope.isCreatingTopic = false;
+			document.getElementById('newTopicContentArea').value = '';
+			document.getElementById('newTopicTitle').value = '';
+		};
+		$scope.createTopic = function(){
+			forumService.createTopic($scope.forum._id, auth, $scope.newTopic, function(createdTopic){
+				$scope.newTopic = {};
+				$scope.forum.topics.push(createdTopic);
+				$scope.cancelTopicCreate();
+			});
+		};
 }]);
 
 app.factory('stories', [
@@ -623,7 +667,31 @@ app.factory('forumService', ['$http', function($http){
 		}).error(function(err){
 			alert('error this: ' + err);
 		});
-	}
+	};
+	service.retrieveForumInfo = function(id, auth){
+		var requestBody = auth.isLoggedIn() ? {token: auth.getToken()} : {};
+
+		return $http.post('/forums/' + id, requestBody).then(function(response){
+			return response.data;
+		});
+	};
+	service.createTopic = function(forum_id, auth, topic, callback){
+		return $http.post('/forum/topics/create', {
+			topic: topic, 
+			token: auth.getToken(),
+			forum_id: forum_id
+		}).then(function(data){
+			var newTopic = {
+				_id: data.data.topic_id,
+				title: topic.title,
+				numberReplies: 0,
+				latestPost: {
+					author: null
+				}
+			};
+			callback(newTopic);
+		});
+	};
 
 	return service;
 }]);
@@ -631,7 +699,12 @@ app.factory('forumService', ['$http', function($http){
 app.config([
 	'$stateProvider',
 	'$urlRouterProvider',
-	function($stateProvider, $urlRouterProvider){
+	'$momentProvider',
+	function($stateProvider, $urlRouterProvider, $momentProvider){
+		$momentProvider
+	      .asyncLoading(false)
+	      .scriptUrl('//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js');
+
 		$stateProvider.state('home', {
 			url: '/home',
 			templateUrl: '/templates/home.php',
@@ -683,6 +756,16 @@ app.config([
 			resolve: {
 				forumsInfo: ['forumService', 'auth', function(forumService, auth){
 					return forumService.retrieveForumsInfo(auth.getToken());
+				}]
+			}
+		});
+		$stateProvider.state('viewForum', {
+			url: '/forum/{id}',
+			templateUrl: '/templates/viewForum.php',
+			controller: 'ForumPageCtrl',
+			resolve: {
+				forumInfo: ['$stateParams', 'forumService', 'auth', function($stateParams, forumService, auth){
+					return forumService.retrieveForumInfo($stateParams.id, auth);
 				}]
 			}
 		});

@@ -581,54 +581,7 @@ function forumIndex(isAuthenticated, response, next){
 
 		for (var i = 0; i < forums.length; i++){
 			var nextForum = forums[i];
-
-			var numberPosts = 0;
-			var latestPost = {
-				date: null,
-				author: null
-			}
-
-			for (var j = 0; j < nextForum.topics.length; j++){
-				numberPosts += 1;
-				var nextTopic = nextForum.topics[j];
-
-				if (!latestPost.date || latestPost.date < nextTopic.date_created){
-					latestPost.date = nextTopic.date_created;
-					latestPost.author = nextTopic.creator;
-				}
-
-				for (var k = 0; k < nextTopic.comments.length; k++){
-					numberPosts += 1;
-					var nextComment = nextTopic.comments[k];
-
-					if (latestPost.date < nextComment.date_created){
-						latestPost.date = nextComment.date_created;
-						latestPost.author = nextComment.creator;
-					}
-
-					if (nextComment.comments.length > 0){
-						for (var l = 0; l < nextComment.comments.length; l++){
-							numberPosts += 1;
-							var nextReply = nextComment.comments[l];
-
-							if (latestPost.date < nextReply.date_created){
-								latestPost.date = nextReply.date_created;
-								latestPost.author = nextReply.creator;
-							}
-						}
-					}
-				}
-			}
-
-			latestPost = latestPost.author ? latestPost : null;
-
-			var nextInfo = {
-				_id: nextForum._id,
-				title: nextForum.title,
-				numberTopics: nextForum.topics.length,
-				numberPosts: numberPosts,
-				latestPost: latestPost
-			};
+			var nextInfo = populateForum(nextForum);
 			forumInfos.push(nextInfo);
 		}
 
@@ -640,6 +593,58 @@ function forumIndex(isAuthenticated, response, next){
 	});
 }
 
+function populateForum(forum){
+	var numberPosts = 0;
+	var latestPost = {
+		date: null,
+		author: null
+	}
+
+	for (var j = 0; j < forum.topics.length; j++){
+		numberPosts += 1;
+		var nextTopic = forum.topics[j];
+
+		if (!latestPost.date || latestPost.date < nextTopic.date_created){
+			latestPost.date = nextTopic.date_created;
+			latestPost.author = nextTopic.creator;
+		}
+
+		for (var k = 0; k < nextTopic.comments.length; k++){
+			numberPosts += 1;
+			var nextComment = nextTopic.comments[k];
+
+			if (latestPost.date < nextComment.date_created){
+				latestPost.date = nextComment.date_created;
+				latestPost.author = nextComment.creator;
+			}
+
+			if (nextComment.comments.length > 0){
+				for (var l = 0; l < nextComment.comments.length; l++){
+					numberPosts += 1;
+					var nextReply = nextComment.comments[l];
+
+					if (latestPost.date < nextReply.date_created){
+						latestPost.date = nextReply.date_created;
+						latestPost.author = nextReply.creator;
+					}
+				}
+			}
+		}
+	}
+
+	latestPost = latestPost.author ? latestPost : null;
+
+	var nextInfo = {
+		_id: forum._id,
+		title: forum.title,
+		numberTopics: forum.topics.length,
+		numberPosts: numberPosts,
+		latestPost: latestPost
+	};
+	
+	return nextInfo;
+}
+
 router.post('/forum', function(request, response, next){
 	if (request.body.token){
 		authenticateWithToken(request, response, next, function(user, info){
@@ -649,3 +654,123 @@ router.post('/forum', function(request, response, next){
 		forumIndex(false, response, next);
 	}
 });
+
+// router.get('/stories/:story', function(request, response){
+// 	response.json(request.story);
+// });
+
+router.param('forum', function(request, response, next, id){
+	var query = Forum.findById(id).deepPopulate('topics.comments');
+
+	query.exec(function(err, forum){
+		if (err) { return next(err); }
+		if (!forum) { return next(new Error('can\'t find forum')); }
+
+		request.forum = forum;
+		return next();
+	});
+});
+
+function forumPage(isUserAuthenticated, forum, response, next){
+	var topics = [];
+
+	for (var j = 0; j < forum.topics.length; j++){
+		var nextTopic = forum.topics[j];
+		var numberReplies = 0;
+		var latestPost = {
+			date: null,
+			author: null
+		}
+
+		for (var k = 0; k < nextTopic.comments.length; k++){
+			numberReplies += 1;
+			var nextComment = nextTopic.comments[k];
+
+			if (latestPost.date < nextComment.date_created){
+				latestPost.date = nextComment.date_created;
+				latestPost.author = nextComment.creator;
+			}
+
+			if (nextComment.comments.length > 0){
+				for (var l = 0; l < nextComment.comments.length; l++){
+					numberReplies += 1;
+					var nextReply = nextComment.comments[l];
+
+					if (latestPost.date < nextReply.date_created){
+						latestPost.date = nextReply.date_created;
+						latestPost.author = nextReply.creator;
+					}
+				}
+			}
+		}
+
+		var topicInfo = {
+			_id: nextTopic._id,
+			title: nextTopic.title,
+			numberReplies: numberReplies,
+			latestPost: latestPost
+		};
+		topics.push(topicInfo);
+	}
+
+	response.json({ 
+		_id: forum._id,
+		title: forum.title, 
+		topics: topics,
+		isUserAuthenticated: isUserAuthenticated 
+	});
+}
+
+router.post('/forums/:forum', function(request, response, next){
+	var forum = request.forum;
+
+	if (request.body.token){
+		authenticateWithToken(request, response, next, function(user, info){
+			forumPage(true, forum, response);
+		});
+	} else {
+		forumPage(false, forum, response);
+	}
+
+});
+
+function dateDiff(){
+
+}
+
+router.post('/forum/topics/create', function(request, response, next){
+	if (!request.body.topic){
+		return response.status(400).json({message: 'No topic data received.'});
+	}
+	else if (!request.body.token){
+		return response.status(401).json({message: 'Must be logged in to post new content.'});
+	}
+	else authenticateWithToken(request, response, next, function(user, info){
+		var topic = request.body.topic;
+
+		Post.create({
+			title: topic.title,
+			content: topic.content,
+			creator: user.username,
+			date_created: new Date()//currentDatetime()
+		})
+
+		var post = new Post();
+		post.title = topic.title;
+		post.content = topic.content;
+		post.creator = user.username;
+		post.date_created = new Date();
+
+		post.save(function(err){
+			if (err){ return next(err); }
+
+			Forum.findById(request.body.forum_id).exec(function(err, forum){
+				forum.topics.push(post);
+				forum.save(function(err){
+					if (err) {return next(err);}
+					response.status(200).json({topic_id: post._id});
+				});
+			});
+		});
+	});
+})
