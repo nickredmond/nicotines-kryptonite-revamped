@@ -432,9 +432,10 @@ app.controller('ForumCtrl', [
 
 		for (var i = 0; i < forumInfos.length; i++){
 			var nextInfo = forumInfos[i];
-			var finalDate = new Date(nextInfo.latestPost.date);
 
-			var timeSinceCreated = $moment(finalDate).fromNow();
+			var finalDate = nextInfo.latestPost ? new Date(nextInfo.latestPost.date) : null;
+			var timeSinceCreated = finalDate ? $moment(finalDate).fromNow() : '';
+
 			nextInfo.timeSinceLastPost = timeSinceCreated;
 
 			moreInfos.push(nextInfo);
@@ -448,9 +449,23 @@ app.controller('ForumPageCtrl', [
 	'auth',
 	'forumService',
 	'forumInfo',
-	function($scope, auth, forumService, forumInfo){
+	'$moment',
+	function($scope, auth, forumService, forumInfo, $moment){
 		$scope.forum = forumInfo;
 		$scope.newTopic = {};
+
+		var moreTopics = [];
+
+		for (var i = 0; i < forumInfo.topics.length; i++){
+			var topic = forumInfo.topics[i];
+
+			var finalDate = topic.latestPost ? new Date(topic.latestPost.date) : null;
+			var timeSinceCreated = finalDate ? $moment(finalDate).fromNow() : '';
+
+			topic.latestPost.timeSinceLastReply = timeSinceCreated;
+
+			moreTopics.push(topic);
+		}
 
 		$scope.addLinkTemplate = function(){
 			document.getElementById('newTopicContentArea').value += ' ' + USER_LINK_TEMPLATE;
@@ -473,10 +488,116 @@ app.controller('TopicCtrl', [
 	'$scope',
 	'forumService',
 	'topicInfo',
-	function($scope, forumService, topicInfo){
+	'auth',
+	'$moment',
+	function($scope, forumService, topicInfo, auth, $moment){
 		$scope.topic = topicInfo.topic;
 		$scope.isUserAuthenticated = topicInfo.isUserAuthenticated;
 		$scope.forum = topicInfo.forum;
+
+		$scope.isCreatingComment = {};
+
+		var comments = topicInfo.topic.comments;
+
+		var moreComments = [];
+
+		for (var i = 0; i < comments.length; i++){
+			var nextComment = comments[i];
+
+			var finalDate = new Date(nextComment.date_created);
+			var timeSinceCreated = $moment(finalDate).fromNow();
+
+			nextComment.timeSincePosted = timeSinceCreated;
+			moreComments.push(nextComment);
+
+			var moreSubComments = [];
+
+			for (var j = 0; j < nextComment.comments.length; j++){
+				var subComment = nextComment.comments[j];
+
+				finalDate = new Date(nextComment.date_created);
+				timeSinceCreated = $moment(finalDate).fromNow();
+
+				subComment.timeSincePosted = timeSinceCreated;
+				moreSubComments.push(subComment);
+			}
+
+			$scope.topic.comments[i].comments = moreSubComments;
+		}
+
+		$scope.topic.comments = moreComments;
+
+		$scope.newCommentInit = function(){
+			$scope.newComment = {
+				isTopicComment: true,
+				title: '',
+				content: ''
+			};
+		};
+		$scope.newCommentInit();
+
+		$scope.addLinkTemplate = function(){
+			// var textArea = $scope.newComment.isTopicComment ? 
+			// 				document.getElementById('newCommentContentArea') :
+			// 				document.getElementById('comment_' + comment_id + '_contentArea');
+
+			// textArea.value += ' ' + USER_LINK_TEMPLATE;
+			$scope.newComment.content += ' ' + USER_LINK_TEMPLATE;
+		};
+		$scope.cancelCommentCreate = function(comment_id){
+			if (comment_id){
+				$scope.isCreatingComment[comment_id] = false;
+			} 
+			else {
+				$scope.isCreatingComment['topic'] = false;
+			}
+
+			// var textArea = $scope.newComment.isTopicComment ? 
+			// 				document.getElementById('newCommentContentArea') :
+			// 				document.getElementById('comment_' + comment_id + '_contentArea');
+			// var titleElement = $scope.newComment.isTopicComment ?
+			// 					document.getElementById('newCommentTitle') :
+			// 					document.getElementById('comment_' + comment_id + '_title');
+
+			// textArea.value = '';
+			// titleElement.value = '';
+			$scope.newComment.title = '';
+			$scope.newComment.content = '';
+		};
+		$scope.createComment = function(post_id){
+			forumService.createComment(post_id, auth, $scope.newComment, function(author){
+				var createdComment = {
+					title: $scope.newComment.title,
+					content: $scope.newComment.content,
+					creator: author,
+					timeSincePosted: 'a few seconds ago'
+				}
+				$scope.newCommentInit();
+
+				if (post_id !== $scope.topic._id){
+					var foundComment = false;
+
+					for (var i = 0; i < $scope.topic.comments.length && !foundComment; i++){
+						var comment = $scope.topic.comments[i];
+
+						if (comment._id === post_id){
+							foundComment = true;
+							comment.comments.push(createdComment);
+						}
+					}
+
+					$scope.cancelCommentCreate(post_id);
+				}
+				else {
+					$scope.topic.comments.push(createdComment);
+					$scope.cancelCommentCreate();
+				}
+			});
+		};
+		$scope.openCommentForm = function(post_id){
+			$scope.isCreatingComment = {};
+			$scope.isCreatingComment[post_id] = true;
+		};
 }]);
 
 app.factory('stories', [
@@ -735,6 +856,15 @@ app.factory('forumService', ['$http', function($http){
 				}
 			};
 			callback(newTopic);
+		});
+	};
+	service.createComment = function(post_id, auth, comment, callback){
+		return $http.post('/forum_topic/comments/new_comment', {
+			comment: comment,
+			token: auth.getToken(),
+			post_id: post_id
+		}).then(function(data){
+			callback(data.data.author);
 		});
 	};
 

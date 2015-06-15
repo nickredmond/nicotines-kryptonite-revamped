@@ -8,8 +8,8 @@
 <button ng-show="forum.isUserAuthenticated && !isCreatingTopic" class="btn btn-primary" ng-click="isCreatingTopic = true">New Topic</button>
 <div ng-show="isCreatingTopic">
 	<div>
-		<img id="formUserAvatar" src="/images/default_avatar.png" />
-		<input id="newTopicTitle" type="text" placeholder="Title" ng-model="newTopic.title" />
+		<img class="formUserAvatar" src="/images/default_avatar.png" />
+		<input id="newTopicTitle" class="newTopicTitle" type="text" placeholder="Title" ng-model="newTopic.title" />
 	</div>
 	<div>
 		<a class="ngActionLink" ng-click="addLinkTemplate()">Add Link</a>
@@ -29,6 +29,10 @@
 	<tr ng-repeat="topic in forum.topics">
 		<td><a ng-href="#/forum/topics/{{ topic._id }}">{{ topic.title }}</a></td>
 		<td>{{ topic.numberReplies }}</td>
-		<td>By {{ topic.latestPost.author }}&nbsp;{{ topic.latestPost.timeSinceLastReply }} ago</td>
+		<td>
+			<span ng-show="topic.latestPost.author">
+				By <strong>{{ topic.latestPost.author }}</strong>&nbsp;{{ topic.latestPost.timeSinceLastReply }}
+			</span>
+		</td>
 	</tr>
 </table>

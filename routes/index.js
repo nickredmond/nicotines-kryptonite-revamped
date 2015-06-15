@@ -603,7 +603,6 @@ function populateForum(forum){
 	for (var j = 0; j < forum.topics.length; j++){
 		numberPosts += 1;
 		var nextTopic = forum.topics[j];
-
 		if (!latestPost.date || latestPost.date < nextTopic.date_created){
 			latestPost.date = nextTopic.date_created;
 			latestPost.author = nextTopic.creator;
@@ -734,10 +733,6 @@ router.post('/forums/:forum', function(request, response, next){
 
 });
 
-function dateDiff(){
-
-}
-
 router.post('/forum/topics/create', function(request, response, next){
 	if (!request.body.topic){
 		return response.status(400).json({message: 'No topic data received.'});
@@ -752,7 +747,7 @@ router.post('/forum/topics/create', function(request, response, next){
 			title: topic.title,
 			content: topic.content,
 			creator: user.username,
-			date_created: new Date()//currentDatetime()
+			date_created: new Date()
 		})
 
 		var post = new Post();
@@ -773,7 +768,7 @@ router.post('/forum/topics/create', function(request, response, next){
 			});
 		});
 	});
-})
+});
 
 router.param('topic', function(request, response, next, id){
 	var query = Post.findById(id).deepPopulate('comments.comments');
@@ -785,7 +780,7 @@ router.param('topic', function(request, response, next, id){
 		request.topic = topic;
 		return next();
 	})
-})
+});
 
 router.post('/forum/topics/:topic', function(request, response, next){
 	if (request.body.token){
@@ -795,4 +790,36 @@ router.post('/forum/topics/:topic', function(request, response, next){
 	} else {
 		response.json({isUserAuthenticated: false, topic: request.topic});
 	}
-})
+});
+
+router.post('/forum_topic/comments/new_comment', function(request, response, next){
+	if (!(request.body.comment && request.body.post_id)){
+		return response.status(400).json({message: 'Invalid data received.'});
+	}
+	else if (!request.body.token){
+		return response.status(401).json({message: 'Must be logged in to post new content.'});
+	}
+	else authenticateWithToken(request, response, next, function(user, info){
+		var query = Post.findById(request.body.post_id).populate('comments');
+		query.exec(function(err, post){
+			if (err) {return next(err);}
+
+			var comment = new Post();
+			comment.title = request.body.comment.title;
+			comment.content = request.body.comment.content;
+			comment.creator = user.username;
+			comment.date_created = new Date();
+
+			comment.save(function(err){
+				if (err) {return next(err);}
+
+				post.comments.push(comment);
+				post.save(function(err){
+					if (err) {return next(err);}
+				});
+			});
+		});
+
+		return response.json({author: user.username});
+	});
+});

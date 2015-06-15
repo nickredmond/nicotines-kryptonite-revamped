@@ -10,17 +10,17 @@
 	<a class="ngActionLink" ng-click="toggleModal()">Log In</a> or <a ng-click="beginSignup()" href="#/signup">Sign Up</a> to post comments.
 </span>
 
-<div ng-show="isCreatingComment">
+<div ng-show="isCreatingComment['topic']">
 	<div>
-		<img id="formUserAvatar" src="/images/default_avatar.png" />
-		<input id="newCommentTitle" type="text" placeholder="Title" ng-model="newComment.title" />
+		<img class="formUserAvatar" src="/images/default_avatar.png" />
+		<input class="newTopicTitle" type="text" placeholder="Title" ng-model="newComment.title" />
 	</div>
 	<div>
 		<a class="ngActionLink" ng-click="addLinkTemplate()">Add Link</a>
 	</div>
 	<textarea id="newCommentContentArea" rows="4" cols="50" ng-model="newComment.content" placeholder="Say something..."></textarea>
 	<div>
-		<button class="btn btn-primary" ng-click="createComment()">Post</button>
+		<button class="btn btn-primary" ng-click="createComment(topic._id)">Post</button>
 		<a class="ngActionLink" ng-click="cancelCommentCreate()">Cancel</a>
 	</div>
 </div>
@@ -28,16 +28,27 @@
 	<span class="sectionHeader">Comments</span>
 	<hr class="contentBreak" color="#aaa" noshade>
 </div>
-<button id="topicCommentButton" ng-show="isUserAuthenticated && !isCreatingComment" 
+<button id="topicCommentButton" ng-show="isUserAuthenticated && !isCreatingComment['topic']" 
 			class="btn btn-primary"
-			ng-click="isCreatingComment = true">New Comment</button>
-<div ng-repeat="comment in topic.comments">
-	<div>
-		<img src="/images/default_avatar.png" />
-		<strong>{{ comment.title }}</strong><br />
-		<span>{{ comment.author }} commented {{ comment.timeSincePosted }}</span>
+			ng-click="openCommentForm('topic')">New Comment</button>
+<div class="topicCommentArea" ng-repeat="comment in topic.comments">
+	<div class="commentInfoArea">
+		<img class="formUserAvatar" src="/images/default_avatar.png" />
+		<strong class="newTopicTitle">{{ comment.title }}</strong><br />
+		<span><em><strong>{{ comment.creator }}</strong> commented {{ comment.timeSincePosted }}</em></span>
 	</div>
 	<div>
 		{{ comment.content }}
+	</div>
+	<div ng-include="'/templates/commentForm.php'"></div>
+	<div class="topicSubCommentArea" ng-repeat="subComment in comment.comments">
+		<div class="commentInfoArea">
+			<img class="formUserAvatar" src="/images/default_avatar.png" />
+			<strong class="newTopicTitle">{{ subComment.title }}</strong><br />
+			<span><em><strong>{{ subComment.creator }}</strong> commented {{ subComment.timeSincePosted }}</em></span>
+		</div>
+		<div>
+			{{ subComment.content }}
+		</div>
 	</div>
 </div>

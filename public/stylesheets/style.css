@@ -127,12 +127,12 @@ a {
 	cursor: pointer;
 }
 
-#formUserAvatar {
+.formUserAvatar {
 	height: 2.3em;
 	width: auto;
 }
 
-#newTopicTitle {
+.newTopicTitle {
 	height: 2.18em;
 }
 
@@ -151,4 +151,16 @@ a {
 
 #topicContentArea {
 	margin-bottom: 2.2em;
+}
+
+.topicCommentArea {
+	margin: 1.05em 0 1.25em 0;
+}
+
+.topicSubCommentArea {
+	margin: 1em 0 1.1em 3.75em;
+}
+
+.commentInfoArea {
+	margin-bottom: 0.8em;
 }
