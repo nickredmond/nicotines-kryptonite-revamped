@@ -774,3 +774,25 @@ router.post('/forum/topics/create', function(request, response, next){
 		});
 	});
 })
+
+router.param('topic', function(request, response, next, id){
+	var query = Post.findById(id).deepPopulate('comments.comments');
+
+	query.exec(function(err, topic){
+		if (err){return next(err);}
+		if (!topic){return next(new Error('can\'t find topic'));}
+
+		request.topic = topic;
+		return next();
+	})
+})
+
+router.post('/forum/topics/:topic', function(request, response, next){
+	if (request.body.token){
+		authenticateWithToken(request, response, next, function(user, info){
+			response.json({isUserAuthenticated: true, topic: request.topic});
+		});
+	} else {
+		response.json({isUserAuthenticated: false, topic: request.topic});
+	}
+})

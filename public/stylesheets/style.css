@@ -135,3 +135,20 @@ a {
 #newTopicTitle {
 	height: 2.18em;
 }
+
+.sectionHeader {
+	font-size: 1.8em;
+	color: #888;
+}
+
+.contentBreak {
+	margin: 0;
+}
+
+#topicCommentButton {
+	margin-top: 10px;
+}
+
+#topicContentArea {
+	margin-bottom: 2.2em;
+}

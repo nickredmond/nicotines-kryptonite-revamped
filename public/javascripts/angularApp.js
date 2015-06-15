@@ -469,6 +469,16 @@ app.controller('ForumPageCtrl', [
 		};
 }]);
 
+app.controller('TopicCtrl', [
+	'$scope',
+	'forumService',
+	'topicInfo',
+	function($scope, forumService, topicInfo){
+		$scope.topic = topicInfo.topic;
+		$scope.isUserAuthenticated = topicInfo.isUserAuthenticated;
+		$scope.forum = topicInfo.forum;
+}]);
+
 app.factory('stories', [
 	'$http',
 	function($http){
@@ -661,6 +671,9 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 app.factory('forumService', ['$http', function($http){
 	var service = {};
 
+	service.getForumRequestBody = function(auth){
+		return (auth.isLoggedIn() ? {token: auth.getToken()} : {});
+	}
 	service.retrieveForumsInfo = function(token){
 		return $http.post('/forum', {token: token}).success(function(data){
 			angular.copy(data, service.forumsInfo);
@@ -669,10 +682,42 @@ app.factory('forumService', ['$http', function($http){
 		});
 	};
 	service.retrieveForumInfo = function(id, auth){
-		var requestBody = auth.isLoggedIn() ? {token: auth.getToken()} : {};
+		var requestBody = service.getForumRequestBody(auth);
 
 		return $http.post('/forums/' + id, requestBody).then(function(response){
+			service.currentForumInfo = response.data;
 			return response.data;
+		});
+	};
+	service.retrieveTopicInfo = function(id, auth){
+		var requestBody = service.getForumRequestBody(auth);
+
+		return $http.post('/forum/topics/' + id, requestBody).then(function(response){
+			var topicInfo = response.data;
+			topicInfo.forum = {
+				id: service.currentForumInfo._id,
+				title: service.currentForumInfo.title
+			}
+
+			var creationDate = new Date(topicInfo.topic.date_created).toString();
+			var dateTokens = creationDate.split(' ');
+
+			var post_date_info = 'on ' + dateTokens[0] + ', ' + dateTokens[1] + ' ' + dateTokens[2] + ', ' +
+									dateTokens[3] + ' at ';
+
+			var timeTokens = dateTokens[4].split(':');
+			var hour = parseInt(timeTokens[0]);
+			var meridianValue = 'am';
+
+			if (hour > 12){
+				meridianValue = 'pm';
+				hour -= 12;
+			}
+
+			post_date_info += hour.toString() + ':' + timeTokens[1] + ' ' + meridianValue;
+			topicInfo.topic.post_date_info = post_date_info;
+		
+			return topicInfo;
 		});
 	};
 	service.createTopic = function(forum_id, auth, topic, callback){
@@ -766,6 +811,16 @@ app.config([
 			resolve: {
 				forumInfo: ['$stateParams', 'forumService', 'auth', function($stateParams, forumService, auth){
 					return forumService.retrieveForumInfo($stateParams.id, auth);
+				}]
+			}
+		});
+		$stateProvider.state('topic', {
+			url: '/forum/topics/{id}',
+			templateUrl: '/templates/topic.php',
+			controller: 'TopicCtrl',
+			resolve: {
+				topicInfo: ['$stateParams', 'forumService', 'auth', function($stateParams, forumService, auth){
+					return forumService.retrieveTopicInfo($stateParams.id, auth);
 				}]
 			}
 		});

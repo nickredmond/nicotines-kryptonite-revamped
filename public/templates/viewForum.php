@@ -1,6 +1,7 @@
 <div class="page-header" style="margin-top: 0;">
 	<h1 style="margin-top: 0;">Forum - {{ forum.title }}</h1>
 </div>
+<!-- partially (mainly) duplicated in topic.php -->
 <span ng-hide="forum.isUserAuthenticated">
 	<a class="ngActionLink" ng-click="toggleModal()">Log In</a> or <a ng-click="beginSignup()" href="#/signup">Sign Up</a> to post new content.
 </span>
