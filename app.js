@@ -19,6 +19,7 @@ require('./models/Milestones');
 require('./models/NicotineUsages');
 require('./models/Forums');
 require('./models/Posts');
+require('./models/Feedbacks');
 require('./config/passport');
 
 var routes = require('./routes/index');

@@ -20,6 +20,7 @@ var NicotineUsage = mongoose.model('NicotineUsage');
 
 var Forum = mongoose.model('Forum');
 var Post = mongoose.model('Post');
+var Feedback = mongoose.model('Feedback');
 
 var nicotineTypeMappings = {};
 nicotineTypeMappings["Cigarettes"] = "cigarette";
@@ -803,4 +804,22 @@ router.post('/forum_topic/comments/new_comment', function(request, response, nex
 
 router.get('/version', function(request, response, next){
 	return response.json({version: /*null*/ '- ALPHA'});
+});
+
+router.post('/feedback', function(request, response, next){
+	if (!(request.body.summary && request.body.content)){
+		return response.status(400).json({errorMessage: 'Feedback model is missing data.'});
+	}
+	else {
+		var feedback = new Feedback();
+		feedback.summary = request.body.summary;
+		feedback.content = request.body.content;
+		feedback.name = request.body.name;
+
+		feedback.save(function(err){
+			if (err) {return next(err);}
+		});
+
+		return response.status(200).json({});
+	}
 });

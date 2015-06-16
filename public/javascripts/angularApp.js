@@ -591,6 +591,31 @@ app.controller('TopicCtrl', [
 		};
 }]);
 
+app.controller('FeedbackCtrl', [
+	'$scope',
+	'$http',
+	function($scope, $http){
+		$scope.feedback = {};
+		$scope.errorMessages = [];
+
+		$scope.provideFeedback = function(){
+			$scope.errorMessages = [];
+
+			if (!$scope.feedback.summary){
+				$scope.errorMessages.push('Your feedback must contain a summary.');
+			}
+			if (!$scope.feedback.content){
+				$scope.errorMessages.push('Your feedback must contain content.');
+			}
+
+			if ($scope.errorMessages.length === 0){
+				$http.post('/feedback', $scope.feedback).then(function(data){
+					$scope.infoMessage = 'Thank you for your feedback! We\'re working hard to improve!';
+				});
+			}
+		}
+}]);
+
 app.factory('stories', [
 	'$http',
 	function($http){
@@ -944,6 +969,11 @@ app.config([
 					return forumService.retrieveTopicInfo($stateParams.id, auth);
 				}]
 			}
+		});
+		$stateProvider.state('feedback', {
+			url: '/feedback',
+			templateUrl: '/templates/feedback.php',
+			controller: 'FeedbackCtrl'
 		});
 
 		$urlRouterProvider.otherwise('home');

@@ -164,3 +164,15 @@ a {
 .commentInfoArea {
 	margin-bottom: 0.8em;
 }
+
+.feedbackGroup {
+	margin-bottom: 1em;
+}
+
+#feedbackDescriptionLabel {
+	font-size: 1.3em;
+}
+
+#feedbackSendButton {
+	margin-top: 0.5em;
+}
