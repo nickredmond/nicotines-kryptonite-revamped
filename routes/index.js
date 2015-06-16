@@ -356,7 +356,10 @@ function calculateMoneySaved(user){
 			var colderPotato = usageInfo.quantityUsed * user.cigarPrice;
 			actualCost += usageInfo.quantityUsed * user.cigarPrice; 
 		}
-		else if (usageInfo.nicotineType in ['ecig', 'gum', 'patch', 'lozenge']){
+		else if (usageInfo.nicotineType === 'ecig' ||
+					usageInfo.nicotineType === 'gum' ||
+					usageInfo.nicotineType === 'patch' ||
+					usageInfo.nicotineType === 'lozenge'){
 			actualCost += (usageInfo.quantityUsed / user.nrtPricing.amountPerUnit) * user.nrtPricing.averagePrice;
 		}
 	}
