@@ -94,12 +94,17 @@ var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs'
 
 app.controller('HomeCtrl', [
 	'$scope',
+	'$http',
 	'$interval',
 	'$stateParams',
 	'stories',
 	'auth',
 	'signup',
-	function($scope, $interval, $stateParams, stories, auth, signup){
+	function($scope, $http, $interval, $stateParams, stories, auth, signup){
+		$http.get('/version').then(function(data){
+			$scope.version = data.data.version;
+		});
+
 		$scope.errorMessage = $stateParams.errorMessage;
 
 		$scope.deathToll = 0;
@@ -537,11 +542,6 @@ app.controller('TopicCtrl', [
 		$scope.newCommentInit();
 
 		$scope.addLinkTemplate = function(){
-			// var textArea = $scope.newComment.isTopicComment ? 
-			// 				document.getElementById('newCommentContentArea') :
-			// 				document.getElementById('comment_' + comment_id + '_contentArea');
-
-			// textArea.value += ' ' + USER_LINK_TEMPLATE;
 			$scope.newComment.content += ' ' + USER_LINK_TEMPLATE;
 		};
 		$scope.cancelCommentCreate = function(comment_id){
@@ -552,15 +552,6 @@ app.controller('TopicCtrl', [
 				$scope.isCreatingComment['topic'] = false;
 			}
 
-			// var textArea = $scope.newComment.isTopicComment ? 
-			// 				document.getElementById('newCommentContentArea') :
-			// 				document.getElementById('comment_' + comment_id + '_contentArea');
-			// var titleElement = $scope.newComment.isTopicComment ?
-			// 					document.getElementById('newCommentTitle') :
-			// 					document.getElementById('comment_' + comment_id + '_title');
-
-			// textArea.value = '';
-			// titleElement.value = '';
 			$scope.newComment.title = '';
 			$scope.newComment.content = '';
 		};

@@ -148,47 +148,7 @@ router.post('/register', function(request, response, next){
 
 	user.dashboard = dashboard;
 
-	if (user.cigaretteBrand){
-		TobaccoPricing.find({
-			'tobaccoType': "cigarette",
-			'brandName': user.cigaretteBrand,
-			'state': user.stateOfResidence
-		}).exec(function(err, tobaccoPricings){
-			if (err) { return next(err); }
-
-			user.cigarettePrice = tobaccoPricings[0].averagePrice;
-			user.save(function(err){if(err)return next(err);});
-		});
-	}
-	if (user.dipBrand){
-		TobaccoPricing.find({
-			'tobaccoType': "smokeless",
-			'brandName': user.dipBrand,
-			'state': user.stateOfResidence
-		}).exec(function(err, tobaccoPricings){
-			if (err) { return next(err); }
-
-			user.dipPrice = tobaccoPricings[0].averagePrice;
-			user.save(function(err){if(err)return next(err);});
-		});
-	}
-	if (user.cigarBrand){
-		TobaccoPricing.find({
-			'tobaccoType': "cigar",
-			'brandName': user.cigarBrand,
-			'state': user.stateOfResidence
-		}).exec(function(err, tobaccoPricings){
-			if (err) { return next(err); }
-
-			user.cigarPrice = tobaccoPricings[0].averagePrice;
-			user.save(function(err){if(err)return next(err);});
-		});
-	}
-
-	/**
-		nrtBrand syntax: Equate - 4mg - 24 ct.
-						 brandName [- strength [- # ct.]]
-	*/
+	var tobaccoType = null;
 	if (request.body.nrtBrand){
 		var AMOUNT_GIVEN_LENGTH = 3;
 
@@ -196,36 +156,50 @@ router.post('/register', function(request, response, next){
 
 		if (brandTokens.length === AMOUNT_GIVEN_LENGTH){
 			user.nrtBrand = brandTokens[0].trim() + " - " + brandTokens[1].trim();
-			user.amountPerUnit = brandTokens[2].trim().split(' ')[0];
+			user.amountPerUnit = parseInt(brandTokens[2].trim().split(' ')[0]);
 		}
 		else {
 			user.nrtBrand = brandTokens.join("-").trim();
 		}
 
-		var tobaccoType = nicotineTypeMappings[user.quittingMethod];
+		tobaccoType = nicotineTypeMappings[user.quittingMethod];
+	}
 
-		TobaccoPricing.findOne({
-			'tobaccoType': tobaccoType,
-			'brandName': user.nrtBrand,
-			'amountPerUnit': user.amountPerUnit || null
-		})
-		.limit(1)
-		.exec(function(err, tobaccoPricing){
-			if (err) { return next(err); }
+	TobaccoPricing.find({'state': user.stateOfResidence})
+		.where('brandName').in([user.cigaretteBrand, user.dipBrand, user.cigarBrand, user.nrtBrand])
+		.exec(function(err, tobaccoPricings){
+			for (var i = 0; i < tobaccoPricings.length; i++){
+				var nextPricing = tobaccoPricings[i];
 
-			user.nrtPricing = tobaccoPricing;
+				if (user.cigaretteBrand && nextPricing.tobaccoType === 'cigarette' &&
+					 user.cigaretteBrand === nextPricing.brandName) {
+					user.cigarettePrice = nextPricing.averagePrice;
+				}
+				else if (user.dipBrand && nextPricing.tobaccoType === 'smokeless' &&
+						user.dipBrand === nextPricing.brandName){
+					user.dipPrice = nextPricing.averagePrice;
+				}
+				else if (user.cigarBrand && nextPricing.tobaccoType === 'cigar' &&
+						user.cigarBrand === nextPricing.brandName){
+					user.cigarPrice = nextPricing.averagePrice;
+				}
+				else if (user.nrtBrand && nextPricing.tobaccoType === tobaccoType &&
+						user.nrtBrand === nextPricing.brandName &&
+						(user.amountPerUnit === parseInt(nextPricing.amountPerUnit))){
+					user.nrtPricing = nextPricing;
+				}
+			}
+
 			user.save(function(err){
-				if(err){return next(err);}
+				if (err) { console.log('martin'); return next(err); }
 				return handleLogin(user, response, next, null);
 			});
 		});
-	}
-	else {
-		user.save(function(err){
-			if (err) { return next(err); }
-			return handleLogin(user, response, next, null);
-		});
-	}
+
+	/**
+		nrtBrand syntax: Equate - 4mg - 24 ct.
+						 brandName [- strength [- # ct.]]
+	*/
 });
 
 router.param('story', function(request, response, next, id){
@@ -822,4 +796,8 @@ router.post('/forum_topic/comments/new_comment', function(request, response, nex
 
 		return response.json({author: user.username});
 	});
+});
+
+router.get('/version', function(request, response, next){
+	return response.json({version: /*null*/ '- ALPHA'});
 });
