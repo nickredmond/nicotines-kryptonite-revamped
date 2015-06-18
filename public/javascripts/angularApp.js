@@ -352,31 +352,31 @@ app.controller('StoriesCtrl', [
 	}
 ]);
 
-app.controller('TobaccoCostCtrl', [
+app.controller('profileCtrl', [
 	'$scope',
 	'$http',
 	'auth',
 	'userInfo',
 	function($scope, $http, auth, userInfo){
-		//userInfo.getTobaccoCost
+		//userInfo.getprofile
 
-		$scope.tobaccoCostCallback = function(tobaccoCostInfo){
-			$scope.cigarettePrice = tobaccoCostInfo.cigarettePrice;
-			$scope.dipPrice = tobaccoCostInfo.dipPrice;
-			$scope.cigarPrice = tobaccoCostInfo.cigarPrice;
-			$scope.dateQuit = new Date(tobaccoCostInfo.dateQuit);
-			$scope.infoMessage = tobaccoCostInfo.infoMessage;
-			$scope.errorMessage = tobaccoCostInfo.errorMessage;
+		$scope.profileCallback = function(profileInfo){
+			$scope.cigarettePrice = profileInfo.cigarettePrice;
+			$scope.dipPrice = profileInfo.dipPrice;
+			$scope.cigarPrice = profileInfo.cigarPrice;
+			$scope.dateQuit = new Date(profileInfo.dateQuit);
+			$scope.infoMessage = profileInfo.infoMessage;
+			$scope.errorMessage = profileInfo.errorMessage;
 
-			$scope.financialGoalTitle = (tobaccoCostInfo.financialGoalItem ?
+			$scope.financialGoalTitle = (profileInfo.financialGoalItem ?
 				"My Financial Goal" : "Add a financial goal");
-			$scope.financialGoalButtonText = (tobaccoCostInfo.financialGoalItem ?
+			$scope.financialGoalButtonText = (profileInfo.financialGoalItem ?
 				"Update" : "Add");
-			$scope.financialGoalItem = tobaccoCostInfo.financialGoalItem;
-			$scope.financialGoalCost = tobaccoCostInfo.financialGoalCost;
+			$scope.financialGoalItem = profileInfo.financialGoalItem;
+			$scope.financialGoalCost = profileInfo.financialGoalCost;
 		};
 		
-		userInfo.getTobaccoCost(auth.getToken(), $scope.tobaccoCostCallback);
+		userInfo.getprofile(auth.getToken(), $scope.profileCallback);
 
 		$scope.updateProfile = function(){
 			var updateData = {
@@ -395,7 +395,7 @@ app.controller('TobaccoCostCtrl', [
 				updateData.nicotineUsages = $scope.usageInfos;
 			}
 
-			$http.post("/updateTobaccoCost", updateData).success(function(updateInfo){
+			$http.post("/updateProfile", updateData).success(function(updateInfo){
 				$scope.errorMessage = null;
 				$scope.infoMessage = updateInfo.message;
 				auth.updateDashboard();
@@ -616,6 +616,14 @@ app.controller('FeedbackCtrl', [
 		}
 }]);
 
+app.controller('MilestoneCtrl', [
+	'$scope',
+	'completedMilestones',
+	'milestoneService',
+	function($scope, completedMilestones, milestoneService){
+		$scope.completedMilestones = completedMilestones;
+}]);
+
 app.factory('stories', [
 	'$http',
 	function($http){
@@ -703,13 +711,13 @@ app.factory('nav', ['$location', '$window', function($location, $window){
 app.factory('userInfo', ['$http', function($http){
 	var userInfo = {};
 
-	userInfo.getTobaccoCost = function(token, callback){
+	userInfo.getprofile = function(token, callback){
 		var user = {
 			token: token
 		};
 		
-		$http.post('/tobaccoCost', user).success(function(data){
-			var tobaccoCostInfo = {
+		$http.post('/profile', user).success(function(data){
+			var profileInfo = {
 				infoMessage: data.infoMessage,
 				errorMessage: data.errorMessage,
 				cigarettePrice: data.cigarettePrice,
@@ -720,12 +728,12 @@ app.factory('userInfo', ['$http', function($http){
 				financialGoalCost: data.financialGoalCost
 			};
 
-			callback(tobaccoCostInfo);
+			callback(profileInfo);
 		}).error(function(err){ 
-			var tobaccoCostInfo = {
+			var profileInfo = {
 				errorMessage: err.message
 			};
-			callback(tobaccoCostInfo);
+			callback(profileInfo);
 		});
 	};
 
@@ -887,6 +895,18 @@ app.factory('forumService', ['$http', function($http){
 	return service;
 }]);
 
+app.factory('milestoneService', ['$http', function($http){
+	var service = {};
+
+	service.retrieveCompletedMilestones = function(auth){
+		return $http.post('/milestones', {token: auth.getToken()}).then(function(data){
+			return data.data.completedMilestones;
+		});
+	}
+
+	return service;
+}]);
+
 app.config([
 	'$stateProvider',
 	'$urlRouterProvider',
@@ -935,10 +955,10 @@ app.config([
 				}]
 			}
 		});
-		$stateProvider.state('tobaccoCost', {
-			url: '/tobaccoCost',
+		$stateProvider.state('profile', {
+			url: '/profile',
 			templateUrl: '/templates/profile.php',
-			controller: 'TobaccoCostCtrl'
+			controller: 'profileCtrl'
 		});
 		$stateProvider.state('forum', {
 			url: '/forum',
@@ -974,6 +994,19 @@ app.config([
 			url: '/feedback',
 			templateUrl: '/templates/feedback.php',
 			controller: 'FeedbackCtrl'
+		});
+		$stateProvider.state('milestones', {
+			url: '/milestones',
+			templateUrl: '/templates/milestones.php',
+			controller: 'MilestoneCtrl',
+			resolve: {
+				completedMilestones: ['milestoneService', 'auth', function(milestoneService, auth){
+					return milestoneService.retrieveCompletedMilestones(auth);
+				}],
+				authenticated: ['$q', 'auth', function($q, auth){
+					return auth.isLoggedIn($q);
+				}]
+			}
 		});
 
 		$urlRouterProvider.otherwise('home');

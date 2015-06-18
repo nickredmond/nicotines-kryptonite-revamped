@@ -21,6 +21,7 @@ var NicotineUsage = mongoose.model('NicotineUsage');
 var Forum = mongoose.model('Forum');
 var Post = mongoose.model('Post');
 var Feedback = mongoose.model('Feedback');
+var Milestone = mongoose.model('Milestone');
 
 var nicotineTypeMappings = {};
 nicotineTypeMappings["Cigarettes"] = "cigarette";
@@ -389,7 +390,7 @@ router.post('/dashboard', function(request, response, next){
 	})(request, response, next);
 });
 
-router.post('/tobaccoCost', function(request, response, next){
+router.post('/profile', function(request, response, next){
 	if (!request.body.token){
 		return response.status(400).json({message: "Could not authenticate user. Please log in again."});
 	}
@@ -399,7 +400,7 @@ router.post('/tobaccoCost', function(request, response, next){
 			return next(err);
 		}
 		else {
-			var userMessage = user.hasUpdatedTobaccoCost ? null :
+			var userMessage = user.hasUpdatedprofile ? null :
 					"We have pre-populated the amount you spend on tobacco based on our best guess. " +
 					"Feel free to change the amounts so they are more accurate.";
 
@@ -433,7 +434,7 @@ function authenticateWithToken(request, response, next, callback){
 	})(request, response, next);
 }
 
-router.post('/updateTobaccoCost', function(request, response, next){
+router.post('/updateprofile', function(request, response, next){
 	var PRICE_PATTERN = /^\d+(?:\.\d{1,2})?$/;
 	var hasSentResponse = false;
 
@@ -774,9 +775,6 @@ router.post('/forum_topic/comments/new_comment', function(request, response, nex
 	if (!(request.body.comment && request.body.post_id)){
 		return response.status(400).json({message: 'Invalid data received.'});
 	}
-	else if (!request.body.token){
-		return response.status(401).json({message: 'Must be logged in to post new content.'});
-	}
 	else authenticateWithToken(request, response, next, function(user, info){
 		var query = Post.findById(request.body.post_id).populate('comments');
 		query.exec(function(err, post){
@@ -822,4 +820,32 @@ router.post('/feedback', function(request, response, next){
 
 		return response.status(200).json({});
 	}
+});
+
+function isMilestoneCompleted(dateQuit, daysRequired){
+	var difference = new Date().getTime() - dateQuit.getTime();
+	var days = Math.floor(difference / (1000 * 60 * 60 * 24));
+
+	return (days > daysRequired);
+}
+
+router.post('/milestones', function(request, response, next){
+	authenticateWithToken(request, response, next, function(user, info){
+		Milestone
+			.find({ quittingMethod: user.quittingMethod })
+			.where('daysRequired').lt(daysSinceQuit(user.dashboard.dateQuit))
+			.select('milestoneText')
+			.exec(function(err, milestones){
+				var completedMilestones = [];
+
+				//console.log('clifford: ' + daysSinceQuit(user.dashboard.dateQuit));
+
+				for (var i = 0; i < milestones.length; i++){
+					var text = milestones[i].milestoneText;
+					completedMilestones.push(text);
+				}
+
+				return response.status(200).json({completedMilestones: completedMilestones});
+			});
+	});
 });

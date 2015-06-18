@@ -1,7 +1,9 @@
 var mongoose = require('mongoose');
 
 var milestoneSchema = new mongoose.Schema({
-	dateCompleted: {type: Date, null: true},
+	daysRequired: Number,
 	milestoneText: String,
 	quittingMethod: String
-})
+});
+
+mongoose.model('Milestone', milestoneSchema);

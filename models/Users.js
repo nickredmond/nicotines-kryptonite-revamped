@@ -9,7 +9,7 @@ var userSchema = new mongoose.Schema({
 	salt: String,
 	token: String,
 	name: String,
-	hasUpdatedTobaccoCost: {type: Boolean, default: false},
+	hasUpdatedprofile: {type: Boolean, default: false},
 	stateOfResidence: String,
 	birthdate: Date,
 	quittingMethod: String,
@@ -42,15 +42,15 @@ var userSchema = new mongoose.Schema({
 
 userSchema.methods.setCigarettePrice = function(price){
 	this.cigarettePrice = price;
-	this.hasUpdatedTobaccoCost = true;
+	this.hasUpdatedprofile = true;
 };
 userSchema.methods.setDipPrice = function(price){
 	this.dipPrice = price;
-	this.hasUpdatedTobaccoCost = true;
+	this.hasUpdatedprofile = true;
 };
 userSchema.methods.setCigarPrice = function(price){
 	this.cigarPrice = price;
-	this.hasUpdatedTobaccoCost = true;
+	this.hasUpdatedprofile = true;
 };
 
 userSchema.methods.setPassword = function(password){
