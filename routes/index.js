@@ -194,7 +194,7 @@ router.post('/register', function(request, response, next){
 
 			user.save(function(err){
 				if (err) { console.log('martin'); return next(err); }
-				return handleLogin(user, response, next, null);
+				return handleLogin(true, user, response, next, null);
 			});
 		});
 
@@ -294,10 +294,12 @@ function calculateCravingLevel(user){
  	return (cravingLevel / maxCravingValue) * 100;
 }
 
-function handleLogin(user, response, next, info){
+function handleLogin(isNewToken, user, response, next, info){
 	if (user){
-			var token = user.generateJWT();
-			user.token = token;
+			if (isNewToken){
+				var token = user.generateJWT();
+				user.token = token;
+			}
 
 			user.save(function(err){
 				if (err) { return next(err); }
@@ -305,7 +307,8 @@ function handleLogin(user, response, next, info){
 				var hasFinancialGoal = user.dashboard.financialGoal;
 				
 				return response.json({
-					token: user.generateJWT(),
+					token: user.token,
+					areMilestonesEnabled: (user.quittingMethod === "Cold Turkey"),
 					dashboard: {
 						greeting: "Welcome",
 						firstName: user.name,
@@ -375,6 +378,7 @@ router.post('/dashboard', function(request, response, next){
 			(!(req.body.username || req.body.email) || !req.body.password) :
 			!req.body.token;
 	};
+	console.log('auth method: ' + authenticationMethod);
 
 	if (isUserMissingFields(authenticationMethod, request)) {
 		return response.status(400).json({message: 'Please fill out all fields'});
@@ -386,7 +390,10 @@ router.post('/dashboard', function(request, response, next){
 				response.status(400).json({message: "Could not authenticate. Please log in again."}) :
 				next(err);
 		}
-		else return handleLogin(user, response, next, info);
+		else {
+			var isNewToken = (authenticationMethod == 'local');
+			return handleLogin(isNewToken, user, response, next, info);
+		}
 	})(request, response, next);
 });
 
@@ -399,13 +406,19 @@ router.post('/profile', function(request, response, next){
 		if (err){
 			return next(err);
 		}
+		else if (!user){
+			console.log('texas: ' + JSON.stringify(info));
+			return response.status(401).json(info);
+		}
 		else {
 			var userMessage = user.hasUpdatedprofile ? null :
 					"We have pre-populated the amount you spend on tobacco based on our best guess. " +
 					"Feel free to change the amounts so they are more accurate.";
 
 			var userInfo = {
+				areMilestonesEnabled: (user.quittingMethod === "Cold Turkey"),
 				dateQuit: user.dashboard.dateQuit,
+				//isDateQuitUpdated: user.dashboard.isDateQuitUpdated,
 				cigarettePrice: user.cigarettePrice,
 				dipPrice: user.dipPrice,
 				cigarPrice: user.cigarPrice,
@@ -480,9 +493,13 @@ router.post('/updateprofile', function(request, response, next){
 			}
 		}
 		if (isUpdatingDateQuit(request, user)){
+			//user.dashboard.isDateQuitUpdated = true;
+
 			user.dashboard.dateQuit = request.body.dateQuit;
 			user.dashboard.save(function(error){
-				if (error) {return next(error); }
+				if (error) {
+					//user.dashboard.isDateQuitUpdated = false;
+					return next(error); }
 			});
 		}
 		if (isUpdatingFinancialGoal(request, user)){
@@ -793,10 +810,10 @@ router.post('/forum_topic/comments/new_comment', function(request, response, nex
 				post.save(function(err){
 					if (err) {return next(err);}
 				});
+
+				return response.json({author: user.username, id: comment._id});
 			});
 		});
-
-		return response.json({author: user.username});
 	});
 });
 
@@ -831,14 +848,26 @@ function isMilestoneCompleted(dateQuit, daysRequired){
 
 router.post('/milestones', function(request, response, next){
 	authenticateWithToken(request, response, next, function(user, info){
+		var lastNicotineUsageDate = user.dashboard.dateQuit;
+
+		if (user.nicotineUsages.length > 0){
+			console.log('well shit');
+			var dates = user.nicotineUsages.map(function(u){
+				return u.dateUsed;
+			});
+			lastNicotineUsageDate = new Date(Math.max.apply(null, dates));
+			lastNicotineUsageDate.setHours(12); // MIDDLE OF DAY TO MINIMIZE INACCURACY
+		}
+
 		Milestone
-			.find({ quittingMethod: user.quittingMethod })
-			.where('daysRequired').lt(daysSinceQuit(user.dashboard.dateQuit))
+			.find({ 
+				quittingMethod: user.quittingMethod, 
+			/*isSmokingRequired: (user.cigaretteBrand !== null)*/ })
+			.where('daysRequired').lt(daysSinceQuit(lastNicotineUsageDate))
 			.select('milestoneText')
 			.exec(function(err, milestones){
 				var completedMilestones = [];
-
-				//console.log('clifford: ' + daysSinceQuit(user.dashboard.dateQuit));
+				console.log('more cliffords: ' + daysSinceQuit(lastNicotineUsageDate) + ' - ' + milestones.length);
 
 				for (var i = 0; i < milestones.length; i++){
 					var text = milestones[i].milestoneText;

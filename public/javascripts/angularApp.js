@@ -137,9 +137,11 @@ app.controller('DashboardCtrl', [
 	'$interval',
 	'auth',
 	'dashboard',
-	function($scope, $interval, auth, dashboard){
+	'nav',
+	function($scope, $interval, auth, dashboard, nav){
 		$scope.dashboard = auth.dashboard;
 		$scope.dashboard.percentTowardGoal = 100 * ($scope.dashboard.moneySaved / $scope.dashboard.financialGoalCost);
+		nav.areMilestonesEnabled = auth.areMilestonesEnabled;
 
 		$scope.roundToTwoPlaces = function(value){
 			return roundToTwoPlaces(value);
@@ -296,6 +298,10 @@ app.controller('NavCtrl', [
 		$scope.setActive = function(element_id){
 			nav.setActive(element_id);
 		};
+
+		$scope.areMilestonesEnabled = function(){
+			return auth.areMilestonesEnabled();
+		};
 	}
 ]);
 
@@ -355,16 +361,17 @@ app.controller('StoriesCtrl', [
 app.controller('profileCtrl', [
 	'$scope',
 	'$http',
+	'$window',
 	'auth',
 	'userInfo',
-	function($scope, $http, auth, userInfo){
+	function($scope, $http, $window, auth, userInfo){
 		//userInfo.getprofile
 
 		$scope.profileCallback = function(profileInfo){
 			$scope.cigarettePrice = profileInfo.cigarettePrice;
 			$scope.dipPrice = profileInfo.dipPrice;
 			$scope.cigarPrice = profileInfo.cigarPrice;
-			$scope.dateQuit = new Date(profileInfo.dateQuit);
+			$scope.dateQuit = profileInfo.dateQuit; //new Date(profileInfo.dateQuit);
 			$scope.infoMessage = profileInfo.infoMessage;
 			$scope.errorMessage = profileInfo.errorMessage;
 
@@ -379,11 +386,17 @@ app.controller('profileCtrl', [
 		userInfo.getprofile(auth.getToken(), $scope.profileCallback);
 
 		$scope.updateProfile = function(){
+			var date = $scope.dateQuit.date;
+			date.setSeconds(0);
+			date.setMilliseconds(0);
+			date.setMinutes($scope.dateQuit.time.getMinutes());
+			date.setHours($scope.dateQuit.time.getHours());
+
 			var updateData = {
 				cigarettePrice: $scope.cigarettePrice,
 				dipPrice: $scope.dipPrice,
 				cigarPrice: $scope.cigarPrice,
-				dateQuit: $scope.dateQuit,
+				dateQuit: date,
 
 				financialGoalItem: $scope.financialGoalItem,
 				financialGoalCost: $scope.financialGoalCost,
@@ -398,10 +411,12 @@ app.controller('profileCtrl', [
 			$http.post("/updateProfile", updateData).success(function(updateInfo){
 				$scope.errorMessage = null;
 				$scope.infoMessage = updateInfo.message;
+				window.scrollTo(0, 0);
 				auth.updateDashboard();
 			}).error(function(err){
 				$scope.infoMessage = null;
 				$scope.errorMessage = err.message;
+				$window.scrollTo(0, 0);
 			});
 		};
 
@@ -556,10 +571,12 @@ app.controller('TopicCtrl', [
 			$scope.newComment.content = '';
 		};
 		$scope.createComment = function(post_id){
-			forumService.createComment(post_id, auth, $scope.newComment, function(author){
+			forumService.createComment(post_id, auth, $scope.newComment, function(author, id){
 				var createdComment = {
+					_id: id,
 					title: $scope.newComment.title,
 					content: $scope.newComment.content,
+					comments: [],
 					creator: author,
 					timeSincePosted: 'a few seconds ago'
 				}
@@ -620,8 +637,12 @@ app.controller('MilestoneCtrl', [
 	'$scope',
 	'completedMilestones',
 	'milestoneService',
-	function($scope, completedMilestones, milestoneService){
+	'auth',
+	function($scope, completedMilestones, milestoneService, auth){
 		$scope.completedMilestones = completedMilestones;
+		$scope.areMilestonesEnabled = function(){
+			return auth.areMilestonesEnabled();
+		};
 }]);
 
 app.factory('stories', [
@@ -717,13 +738,17 @@ app.factory('userInfo', ['$http', function($http){
 		};
 		
 		$http.post('/profile', user).success(function(data){
+			var time = new Date(data.dateQuit);
+			time.setMilliseconds(0);
+			time.setSeconds(0);
+
 			var profileInfo = {
 				infoMessage: data.infoMessage,
 				errorMessage: data.errorMessage,
 				cigarettePrice: data.cigarettePrice,
 				dipPrice: data.dipPrice,
 				cigarPrice: data.cigarPrice,
-				dateQuit: data.dateQuit,
+				dateQuit: {date: new Date(data.dateQuit), time: time},
 				financialGoalItem: data.financialGoalItem,
 				financialGoalCost: data.financialGoalCost
 			};
@@ -790,6 +815,7 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 					.success(function(data){
 						auth.saveToken(data.token);
 						auth.dashboard = data.dashboard;
+						$window.localStorage['are-milestones-enabled'] = data.areMilestonesEnabled;
 
 						if (auth.dashboard.cravingLevel < 0) {
 							auth.dashboard.cravingLevel = 0;
@@ -809,6 +835,10 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	auth.logOut = function(){
 		$window.localStorage.removeItem('nicotines-kryptonite-token');
 	};
+	auth.areMilestonesEnabled = function(){
+		var areMilestonesEnabled = $window.localStorage['are-milestones-enabled'];
+		return (areMilestonesEnabled === 'true' || areMilestonesEnabled === true);
+	}
 
 	return auth;
 }]);
@@ -888,7 +918,7 @@ app.factory('forumService', ['$http', function($http){
 			token: auth.getToken(),
 			post_id: post_id
 		}).then(function(data){
-			callback(data.data.author);
+			callback(data.data.author, data.data.id);
 		});
 	};
 

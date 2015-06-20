@@ -77,7 +77,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-mongoose.connect('mongodb://heroku_nw9xd3vv:laldboi884bgja098m6sa1npom@ds045882.mongolab.com:45882/heroku_nw9xd3vv', function(err){
+mongoose.connect('mongodb://localhost/kryptonite'/*'mongodb://heroku_nw9xd3vv:laldboi884bgja098m6sa1npom@ds045882.mongolab.com:45882/heroku_nw9xd3vv'*/, function(err){
   if (err) {
     console.log(err);
   }

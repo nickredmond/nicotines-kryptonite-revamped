@@ -14,7 +14,7 @@
 	<input type="text" class="form-control" ng-model="feedback.summary" />
 </div>
 <div class="input-group feedbackGroup">
-	<span class="input-group-addon">Name <small>(Optional)</small></span>
+	<span class="input-group-addon">Name or Username <small>(Optional)</small></span>
 	<input type="text" class="form-control" ng-model="feedback.name" />
 </div>
 <label id="feedbackDescriptionLabel">Description:</label>

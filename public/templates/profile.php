@@ -5,10 +5,14 @@
   <h4>{{ infoMessage }}</h4>
 </div>
 <form>
-  <h3>Update your quit date</h3>
+    <h3>Update your quit date</h3>
   <div class="input-group user-form-control">
-    <span class="input-group-addon">My Quit Date</span>
-    <input type="date" class="form-control datepicker" placeholder="yyyy-MM-dd" ng-model="dateQuit" />
+    <span class="input-group-addon">Date</span>
+    <input type="date" class="form-control datepicker" placeholder="yyyy-MM-dd" ng-model="dateQuit.date" />
+  </div>
+  <div class="input-group user-form-control">
+    <span class="input-group-addon">Time</span>
+    <input type="time" placeholder="HH:mm:ss" class="form-control" ng-model="dateQuit.time" />
   </div>
   <div>
     <h3>Update your tobacco prices <small>(So we know how much youll save)</small></h3>
