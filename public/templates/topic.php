@@ -2,8 +2,7 @@
 	<h2><a ng-href="#/forum/{{ forum.id }}">{{ forum.title }}</a> &gt; {{ topic.title }}</h2>
 	<small>Posted by <strong>{{ topic.creator }}</strong>&nbsp;{{ topic.post_date_info }}</small>
 </div>
-<div id="topicContentArea">
-	{{ topic.content }}
+<div id="topicContentArea" ng-bind-html="topic.content">
 </div>
 
 <span ng-hide="isUserAuthenticated">
@@ -37,8 +36,7 @@
 		<strong class="newTopicTitle">{{ comment.title }}</strong><br />
 		<span><em><strong>{{ comment.creator }}</strong> commented {{ comment.timeSincePosted }}</em></span>
 	</div>
-	<div>
-		{{ comment.content }}
+	<div ng-bind-html="comment.content">
 	</div>
 	<div ng-include="'/templates/commentForm.php'"></div>
 	<div class="topicSubCommentArea" ng-repeat="subComment in comment.comments">
@@ -47,8 +45,7 @@
 			<strong class="newTopicTitle">{{ subComment.title }}</strong><br />
 			<span><em><strong>{{ subComment.creator }}</strong> commented {{ subComment.timeSincePosted }}</em></span>
 		</div>
-		<div>
-			{{ subComment.content }}
+		<div ng-bind-html="subComment.content">
 		</div>
 	</div>
 </div>

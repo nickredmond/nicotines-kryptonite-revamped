@@ -3,7 +3,7 @@ var MILLIS_PER_SECOND = 1000;
 var DEATH_UPDATE_INTERVAL = 10000;
 var EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-var USER_LINK_TEMPLATE = '#URL here:::link text here#'
+var USER_LINK_TEMPLATE = '##URL here:::link text here##'
 
 //--- HELPER FUNCTIONS ---//
 function populateStates(){
@@ -89,8 +89,28 @@ function roundToTwoPlaces(value){
 	return (Math.round((value + 0.00001) * 100) / 100);
 }
 
+var findLinksInText = function(text){
+	var LINK_PATTERN = /##(https?:\/\/)?([\dA-Za-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?(\?[\w\W]+)?:::([\w\W])+##/;
+	var match = LINK_PATTERN.exec(text);
+
+	var link = null;
+
+	if (match && match.length && match.length > 0){
+		var linkText = match[0].replace('##', '').replace('##', '');
+		var linkTokens = linkText.split(':::');
+		link = "<a href=\"" + linkTokens[0] + "\">" + linkTokens[1] + "</a>";
+	}
+
+	var matchText = match ? match[0] : null;
+
+	return {
+		matchText: matchText,
+		link: link
+	};
+}
+
 //--- ANGULAR APP CONSTRUCTION ---//
-var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs']);
+var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs', 'ngSanitize']);
 
 app.controller('HomeCtrl', [
 	'$scope',
@@ -515,6 +535,9 @@ app.controller('TopicCtrl', [
 		$scope.isUserAuthenticated = topicInfo.isUserAuthenticated;
 		$scope.forum = topicInfo.forum;
 
+		var matchResults = findLinksInText($scope.topic.content);
+		$scope.topic.content = $scope.topic.content.replace(matchResults.matchText, matchResults.link);
+
 		$scope.isCreatingComment = {};
 
 		var comments = topicInfo.topic.comments;
@@ -527,6 +550,11 @@ app.controller('TopicCtrl', [
 			var finalDate = new Date(nextComment.date_created);
 			var timeSinceCreated = $moment(finalDate).fromNow();
 
+			matchResults = findLinksInText(nextComment.content);
+			if (matchResults.matchText){
+				nextComment.content = nextComment.content.replace(matchResults.matchText, matchResults.link);
+			}
+
 			nextComment.timeSincePosted = timeSinceCreated;
 			moreComments.push(nextComment);
 
@@ -537,6 +565,11 @@ app.controller('TopicCtrl', [
 
 				finalDate = new Date(nextComment.date_created);
 				timeSinceCreated = $moment(finalDate).fromNow();
+
+				matchResults = findLinksInText(subComment.content);
+				if (matchResults.matchText){
+					subComment.content = subComment.content.replace(matchResults.matchText, matchResults.link);
+				}
 
 				subComment.timeSincePosted = timeSinceCreated;
 				moreSubComments.push(subComment);
@@ -581,6 +614,11 @@ app.controller('TopicCtrl', [
 					timeSincePosted: 'a few seconds ago'
 				}
 				$scope.newCommentInit();
+
+				var matchResults = findLinksInText(createdComment.content);
+				if (matchResults.matchText){
+					createdComment.content = createdComment.content.replace(matchResults.matchText, matchResults.link);
+				}
 
 				if (post_id !== $scope.topic._id){
 					var foundComment = false;
