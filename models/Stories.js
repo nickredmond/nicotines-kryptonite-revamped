@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var random = require('mongoose-random');
 
 var storySchema = new mongoose.Schema({
 	title: String,
@@ -8,4 +9,5 @@ var storySchema = new mongoose.Schema({
 	isTopStory: Boolean
 });
 
+storySchema.plugin(random, { path: 'r' });
 mongoose.model('Story', storySchema);

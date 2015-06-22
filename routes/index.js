@@ -878,3 +878,14 @@ router.post('/milestones', function(request, response, next){
 			});
 	});
 });
+
+router.get('/stories', function(request, response, next){
+	Story.findRandom({
+		isTopStory: false
+	})
+	.limit(10)
+	.exec(function(err, stories){
+		if (err) { return next(err); }
+		return response.json({ stories: stories});
+	});
+});
