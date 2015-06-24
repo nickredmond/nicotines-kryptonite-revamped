@@ -211,13 +211,25 @@ app.controller('NavCtrl', [
 	}
 ]);
 
-app.controller('StoriesCtrl', [
+app.controller('StoryCtrl', [
 	'$scope',
 	'$sce',
 	'story',
 	function($scope, $sce, story){
 		$scope.story = story;
 		$scope.storyText = $sce.trustAsResourceUrl(story.storyUri);
+	}
+]);
+
+app.controller('StoriesCtrl', [
+	'$scope',
+	'storyInfos',
+	function($scope, storyInfos){
+		$scope.stories = storyInfos;
+		$scope.listViewStories = [];
+		for (var i = 3; i < storyInfos.length; i++){
+			$scope.listViewStories.push(storyInfos[i]);
+		}
 	}
 ]);
 
@@ -378,8 +390,7 @@ app.controller('TopicCtrl', [
 		$scope.isUserAuthenticated = topicInfo.isUserAuthenticated;
 		$scope.forum = topicInfo.forum;
 
-		var matchResults = findLinksInText($scope.topic.content);
-		$scope.topic.content = $scope.topic.content.replace(matchResults.matchText, matchResults.link);
+		addLinksToPost($scope.topic);
 
 		$scope.isCreatingComment = {};
 
@@ -393,10 +404,7 @@ app.controller('TopicCtrl', [
 			var finalDate = new Date(nextComment.date_created);
 			var timeSinceCreated = $moment(finalDate).fromNow();
 
-			matchResults = findLinksInText(nextComment.content);
-			if (matchResults.matchText){
-				nextComment.content = nextComment.content.replace(matchResults.matchText, matchResults.link);
-			}
+			addLinksToPost(nextComment);
 
 			nextComment.timeSincePosted = timeSinceCreated;
 			moreComments.push(nextComment);
@@ -409,10 +417,7 @@ app.controller('TopicCtrl', [
 				finalDate = new Date(nextComment.date_created);
 				timeSinceCreated = $moment(finalDate).fromNow();
 
-				matchResults = findLinksInText(subComment.content);
-				if (matchResults.matchText){
-					subComment.content = subComment.content.replace(matchResults.matchText, matchResults.link);
-				}
+				addLinksToPost(subComment);
 
 				subComment.timeSincePosted = timeSinceCreated;
 				moreSubComments.push(subComment);

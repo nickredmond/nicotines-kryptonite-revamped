@@ -15,6 +15,12 @@ app.factory('stories', [
 				return response.data;
 			});
 		};
+		service.retrieveStoryPage = function(page_number){
+			return $http.get('/stories?page=' + page_number).then(function(response){
+				//alert('yo dawg: ' + JSON.stringify(response.data.stories));
+				return response.data.stories;
+			});
+		};
 
 		return service;
 	}

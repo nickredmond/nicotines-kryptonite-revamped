@@ -90,6 +90,11 @@ var findLinksInText = function(text){
 	if (match && match.length && match.length > 0){
 		var linkText = match[0].replace('##', '').replace('##', '');
 		var linkTokens = linkText.split(':::');
+
+		if (!(linkTokens[0].startsWith('http://') || linkTokens[0].startsWith('https://'))){
+			linkTokens[0] = 'http://' + linkTokens[0];
+		}
+
 		link = "<a href=\"" + linkTokens[0] + "\">" + linkTokens[1] + "</a>";
 	}
 
@@ -99,4 +104,11 @@ var findLinksInText = function(text){
 		matchText: matchText,
 		link: link
 	};
+}
+
+var addLinksToPost = function(post){
+	matchResults = findLinksInText(post.content);
+	if (matchResults.matchText){
+		post.content = post.content.replace(matchResults.matchText, matchResults.link);
+	}
 }

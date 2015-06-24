@@ -879,13 +879,30 @@ router.post('/milestones', function(request, response, next){
 	});
 });
 
+function randomSort(array){
+	for (var i = array.length - 1; i >= 0; i--){
+		var randIndex = (Math.random() * i);
+		var j = (randIndex >= 0.5) ? Math.ceil(randIndex) : 0;
+
+		var temp = array[i];
+		array[i] = array[j];
+		array[j] = temp;
+	}
+}
+
 router.get('/stories', function(request, response, next){
-	Story.findRandom({
+	// Story.syncRandom(function(err, result){
+	// 	console.log('update: ' + result.updated);
+	// });
+	Story.find/*Random*/({
 		isTopStory: false
 	})
 	.limit(10)
 	.exec(function(err, stories){
 		if (err) { return next(err); }
+		console.log('oh god dammit: ' + stories.length);
+
+		randomSort(stories);
 		return response.json({ stories: stories});
 	});
 });

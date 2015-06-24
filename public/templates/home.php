@@ -7,7 +7,7 @@
   </div>
   <div id="indexTopStory" class="jumbotron">
     <img id="homeStoryImage" ng-src="{{ homeStoryImageUri }}" id="homeStoryImage" class="img-rounded" alt="{{ homeStoryImageUri }}" />
-    <h1>{{ homeStoryTitle }}</h1>
+    <h2>{{ homeStoryTitle }}</h2>
     <p>{{ homeStorySummary | truncate:true:100:' ...' }}&nbsp;<a ng-click="setActive('none')" ng-href="#{{readMoreURL}}">Read More ></a></p>
   </div>
   <div id="deathToll" class="alert alert-info">

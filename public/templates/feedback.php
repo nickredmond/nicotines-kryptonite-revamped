@@ -17,6 +17,8 @@
 	<span class="input-group-addon">Name or Username <small>(Optional)</small></span>
 	<input type="text" class="form-control" ng-model="feedback.name" />
 </div>
+<form>
 <label id="feedbackDescriptionLabel">Description:</label>
-<textarea ng-model="feedback.content" rows="10" cols="75" placeholder="Say something... we're all ears!" />
+<textarea class="form-control" ng-model="feedback.content" rows="10" cols="75" placeholder="Say something... we're all ears!" />
 <button id="feedbackSendButton" class="btn btn-primary" ng-click="provideFeedback()">Send Feedback</button>
+</form>

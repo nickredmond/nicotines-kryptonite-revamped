@@ -176,3 +176,49 @@ a {
 #feedbackSendButton {
 	margin-top: 0.5em;
 }
+
+#mainStoryArea {
+	border-radius: 10px; 
+	overflow: hidden; 
+	background-color: #EEE;
+}
+
+.subStoryArea {
+	background-color: #EEE;
+	height: 119px;
+	margin-top: 10px;
+	padding: 5px;
+}
+
+#leftStoryArea {
+	margin-right: 3px;
+}
+
+#rightStoryArea {
+	margin-left: 3px;
+}
+
+.storyAreaContainer {
+	padding: 0;
+}
+
+#mainStoryLink {
+	font-size: 1.65em;
+	margin-top: 10px;
+}
+
+.subStoryLink {
+	font-size: 1.3em;
+}
+
+.storiesPageHeader {
+	margin-top: 0;
+}
+
+.listStoryArea {
+	padding-top: 1em;
+}
+
+.storyBreak {
+	margin: 1em 0 1em 0;
+}

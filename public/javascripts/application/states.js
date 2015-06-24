@@ -26,7 +26,7 @@ app.config([
 		$stateProvider.state('viewStory', {
 			url: '/stories/{id}',
 			templateUrl: '/templates/viewStory.php',
-			controller: 'StoriesCtrl',
+			controller: 'StoryCtrl',
 			resolve: {
 				story: ['$stateParams', 'stories', function($stateParams, stories){
 					return stories.get($stateParams.id);
@@ -99,6 +99,16 @@ app.config([
 				}]
 			}
 		});
+		$stateProvider.state('stories', {
+			url: '/stories',
+			templateUrl: '/templates/stories.php',
+			controller: 'StoriesCtrl',
+			resolve: {
+				storyInfos: ['stories', function(stories){
+					return stories.retrieveStoryPage(1);
+				}]
+			}
+		})
 
 		$urlRouterProvider.otherwise('home');
 	}
