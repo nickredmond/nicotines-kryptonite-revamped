@@ -900,7 +900,6 @@ router.get('/stories', function(request, response, next){
 	.limit(10)
 	.exec(function(err, stories){
 		if (err) { return next(err); }
-		console.log('oh god dammit: ' + stories.length);
 
 		randomSort(stories);
 		return response.json({ stories: stories});
