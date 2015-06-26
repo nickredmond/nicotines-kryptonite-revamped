@@ -194,7 +194,7 @@ router.post('/register', function(request, response, next){
 
 			user.save(function(err){
 				if (err) { console.log('martin'); return next(err); }
-				return handleLogin(true, user, response, next, null);
+				return handleLogin(true, user, request, response, next, null);
 			});
 		});
 
@@ -294,21 +294,37 @@ function calculateCravingLevel(user){
  	return (cravingLevel / maxCravingValue) * 100;
 }
 
-function handleLogin(isNewToken, user, response, next, info){
+function handleLogin(isNewToken, user, request, response, next, info){
 	if (user){
 			if (isNewToken){
 				var token = user.generateJWT();
 				user.token = token;
 			}
 
+			// TODO: match regex pattern for number to prevent server explosions
+			var daysHistory = request.body.numberDaysInHistory ?
+								parseInt(request.body.numberDaysInHistory) :
+								7;
+			var startingDate = new Date();
+			startingDate.setDate(startingDate.getDate() - daysHistory);
+
 			user.save(function(err){
 				if (err) { return next(err); }
 
 				var hasFinancialGoal = user.dashboard.financialGoal;
+				var inScopeUsages = [];
+
+				for (var i = 0; i < user.nicotineUsages.length; i++){
+					var nextUsage = user.nicotineUsages[i];
+					if (nextUsage.dateUsed > startingDate){
+						inScopeUsages.push(nextUsage);
+					}
+				}
 				
 				return response.json({
 					token: user.token,
 					areMilestonesEnabled: (user.quittingMethod === "Cold Turkey"),
+					nicotineUsages: inScopeUsages,
 					dashboard: {
 						greeting: "Welcome",
 						firstName: user.name,
@@ -392,7 +408,7 @@ router.post('/dashboard', function(request, response, next){
 		}
 		else {
 			var isNewToken = (authenticationMethod == 'local');
-			return handleLogin(isNewToken, user, response, next, info);
+			return handleLogin(isNewToken, user, request, response, next, info);
 		}
 	})(request, response, next);
 });

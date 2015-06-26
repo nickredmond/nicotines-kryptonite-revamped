@@ -127,6 +127,7 @@ app.factory('userInfo', ['$http', function($http){
 app.factory('auth', ['$http', '$window', function($http, $window){
 	var auth = {
 		dashboard: {},
+		nicotineUsages: {},
 		tobaccoPrices: {}
 	};
 
@@ -174,6 +175,7 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 					.success(function(data){
 						auth.saveToken(data.token);
 						auth.dashboard = data.dashboard;
+						auth.nicotineUsages = data.nicotineUsages;
 						$window.localStorage['are-milestones-enabled'] = data.areMilestonesEnabled;
 
 						if (auth.dashboard.cravingLevel < 0) {

@@ -1,3 +1,4 @@
+<script src="/javascripts/chart.js"></script>
 <div class="page-header pageHeader">
   <h2>{{ dashboard.greeting }}, {{ dashboard.firstName }}! <small>{{ dashboard.subgreeting }}</small></h2>
 </div>
@@ -24,5 +25,15 @@
     <div class="legendRow">
       <span class="label label-info keyLabel infoColorLabel">_</span>
       <span>= Money Remaining</span>
+    </div>
   </div>
+</div>
+<div>
+  <h3>Your Nicotine History</h3>
+  <canvas id="nicotineHistoryChart" style="width: 100%; height: auto;"></canvas>
+  <span>Show data for the past</span>
+  <select class="form-control" ng-model="chartTimespan" ng-change="updateChart()">
+    <option selected>week</option>
+    <option>two weeks</option>
+  </select>
 </div>
