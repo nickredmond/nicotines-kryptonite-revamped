@@ -30,9 +30,11 @@
 </div>
 <div>
   <h3>Your Nicotine History</h3>
-  <canvas id="nicotineHistoryChart" style="width: 100%; height: auto;"></canvas>
+  <div id="chartContainer">
+    <canvas id="nicotineHistoryChart" style="width: 100%; height: auto;"></canvas>
+  </div>
   <span>Show data for the past</span>
-  <select class="form-control" ng-model="chartTimespan" ng-change="updateChart()">
+  <select id="nicotineHistoryTimespanSelector" class="form-control" ng-model="chartTimespan" ng-change="updateChart()">
     <option selected>week</option>
     <option>two weeks</option>
   </select>

@@ -147,7 +147,7 @@ var generateChartData_twoWeeks = function(nicotineUsages){
 		var dayOfMonthUsed = dateUsed.getDate();
 
 		var daysFromStart = daydiff(today, dateUsed);
-		var usageIndex = Math.floor(daysFromStart / 2);
+		var usageIndex = Math.round(daysFromStart / 2);
 		usageData[nextUsage.nicotineType][usageIndex] += nextUsage.quantityUsed;
 	}
 

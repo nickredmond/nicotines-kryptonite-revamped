@@ -49,20 +49,27 @@ app.controller('DashboardCtrl', [
 		$scope.dashboard.percentTowardGoal = 100 * ($scope.dashboard.moneySaved / $scope.dashboard.financialGoalCost);
 		nav.areMilestonesEnabled = auth.areMilestonesEnabled;
 
+		var resetNicotineHistoryChart = function(){
+			var canvas = document.querySelector('#nicotineHistoryChart');
+			if (canvas) canvas.remove();
+
+			$('#chartContainer').append('<canvas id="nicotineHistoryChart" style="width: 100%; height: auto;"></canvas>');
+			var canvas = document.querySelector('#nicotineHistoryChart');
+
+			var context = document.getElementById('nicotineHistoryChart').getContext('2d');
+			var chartData = generateChartData(auth.nicotineUsages, $scope.chartTimespan);
+			var chart = new Chart(context).Line(chartData.data, chartData.options);
+		};
+
 		$scope.chartTimespan = 'week';
-		var context = document.getElementById('nicotineHistoryChart').getContext('2d');
-		var chartData = generateChartData(auth.nicotineUsages, $scope.chartTimespan);
-		var chart = new Chart(context).Line(chartData.data, chartData.options);
+		resetNicotineHistoryChart();
 
 		$scope.roundToTwoPlaces = function(value){
 			return roundToTwoPlaces(value);
 		};
 		$scope.updateChart = function(){
 			auth.updateDashboard();
-
-			var context = document.getElementById('nicotineHistoryChart').getContext('2d');
-			var chartData = generateChartData(auth.nicotineUsages, $scope.chartTimespan);
-			var chart = new Chart(context).Line(chartData.data, chartData.options);
+			resetNicotineHistoryChart();
 		};
 
 		var cravingBar = document.getElementById('cravingLevelBar');
