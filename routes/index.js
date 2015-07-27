@@ -4,6 +4,8 @@ var passport = require('passport');
 var jwt = require('express-jwt');
 var mongoose = require('mongoose');
 
+var ObjectId = require('mongodb').ObjectId;
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -837,11 +839,40 @@ router.get('/version', function(request, response, next){
 	return response.json({version: /*null*/ '- ALPHA'});
 });
 
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill('ebhaJJ_vdEhoA4MBMWx5yQ');
+
 router.post('/feedback', function(request, response, next){
 	if (!(request.body.summary && request.body.content)){
 		return response.status(400).json({errorMessage: 'Feedback model is missing data.'});
 	}
 	else {
+		// var message = {
+		// 	html: '<h1>This is a Test</h1><p>If you are reading this, then it succeeded.',
+		// 	subject: 'Testing Mandrill API :D',
+		// 	to: [{
+		// 		email: 'nicholas.john.redmond@gmail.com',
+		// 		name: 'Nick Redmond',
+		// 		type: 'to'
+		// 	}],
+		// 	from_email: 'testingMandrillFeedback@mailinator.com',
+		// 	from_name: 'Nick Redmond'
+		// 	// merge: true,
+		// 	// merge_language: 'mailchimp'
+		// };
+		// // var async = false;
+		// // var ip_pool = 'Main Pool';
+		// // var send_at = 'example send_at';
+
+		// mandrill_client.messages.send({
+		// 	message: message,
+		// 	async: false
+		// }, function(result){
+		// 	console.log('result this: ' + JSON.stringify(result));
+		// }, function(err){
+		// 	console.log('Mandrill error: ' + err.name + ' -- ' + err.message);
+		// });
+
 		var feedback = new Feedback();
 		feedback.summary = request.body.summary;
 		feedback.content = request.body.content;
@@ -910,14 +941,43 @@ router.get('/stories', function(request, response, next){
 	// Story.syncRandom(function(err, result){
 	// 	console.log('update: ' + result.updated);
 	// });
-	Story.find/*Random*/({
-		isTopStory: false
+	var isLoadingMore = (request.query.id && request.query.id !== 'undefined');
+
+	var lastTimestamp =  isLoadingMore ?
+							new ObjectId(request.query.id).getTimestamp() :
+							null;
+	var earliestTimestamp = isLoadingMore ? lastTimestamp : '2100/01/01'
+	var storiesLimit = isLoadingMore ? 7 : 15;
+
+	var objectIdWithTimestamp = function(timestamp) {
+	    // Convert string date to Date object (otherwise assume timestamp is a date)
+	    if (typeof(timestamp) == 'string') {
+	        timestamp = new Date(timestamp);
+	    }
+
+	    // Convert date object to hex seconds since Unix epoch
+	    var hexSeconds = Math.floor(timestamp/1000).toString(16);
+
+	    // Create an ObjectId with that hex timestamp
+	    var constructedObjectId = ObjectId(hexSeconds + "0000000000000000");
+
+	    return constructedObjectId
+	}
+
+	Story.find({
+		isTopStory: false,
+		_id: { $lt: objectIdWithTimestamp(earliestTimestamp) } // INSERT TIMESTAMP
 	})
-	.limit(10)
+	.limit(storiesLimit)
+	.sort('-_id')
+	//.where('isTestStory: false')
 	.exec(function(err, stories){
 		if (err) { return next(err); }
 
-		randomSort(stories);
+
+
+		//randomSort(stories);
+		console.log('stories len: ' + stories.length);
 		return response.json({ stories: stories});
 	});
 });

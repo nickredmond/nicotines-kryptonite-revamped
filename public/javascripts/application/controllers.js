@@ -243,11 +243,28 @@ app.controller('StoryCtrl', [
 app.controller('StoriesCtrl', [
 	'$scope',
 	'storyInfos',
-	function($scope, storyInfos){
+	'stories',
+	function($scope, storyInfos, stories){
 		$scope.stories = storyInfos;
 		$scope.listViewStories = [];
 		for (var i = 3; i < storyInfos.length; i++){
 			$scope.listViewStories.push(storyInfos[i]);
+		}
+
+		$scope.noStoriesRemaining = false;
+
+		$scope.getMoreStories = function(){
+			var lastIndex = $scope.listViewStories.length - 1;
+			var newStories = stories.getMoreStories($scope.listViewStories[lastIndex]._id);
+			
+			if (newStories.length === 0){
+				$scope.noStoriesRemaining = true;
+			}
+			else $scope.listViewStories.push(newStories);
+
+		}
+		$scope.noStoriesRemaining = function(){
+			return $scope.noStoriesRemaining;
 		}
 	}
 ]);

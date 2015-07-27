@@ -30,7 +30,7 @@
 		</div>
 	</div>
 </div>
-<div class="listStoryArea" ng-repeat="story in listViewStories">
+<div infinite-scroll="getMoreStories()" infinite-scroll-disabled="noStoriesRemaining()" class="listStoryArea" ng-repeat="story in listViewStories">
 	<a ng-click="setActive('none')" ng-href="#/stories/{{ story._id }}">{{ story.title }}</a>
 	<hr class="storyBreak" />
 </div>

@@ -22,6 +22,13 @@ app.factory('stories', [
 			});
 		};
 
+		service.getMoreStories = function(id){
+			alert("I need more stories!");
+			return $http.get('/stories?id=' + id).then(function(response){
+				return response.data.stories;
+			});
+		};
+
 		return service;
 	}
 ]);

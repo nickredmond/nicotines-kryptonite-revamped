@@ -7,6 +7,7 @@ var storySchema = new mongoose.Schema({
 	imageUri: String,
 	storyUri: String,
 	isTopStory: Boolean
+	isTestStory: {null: true, default: false}
 });
 
 storySchema.plugin(random, { path: 'r' });
