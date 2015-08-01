@@ -396,7 +396,6 @@ router.post('/dashboard', function(request, response, next){
 			(!(req.body.username || req.body.email) || !req.body.password) :
 			!req.body.token;
 	};
-	console.log('auth method: ' + authenticationMethod);
 
 	if (isUserMissingFields(authenticationMethod, request)) {
 		return response.status(400).json({message: 'Please fill out all fields'});
@@ -425,7 +424,6 @@ router.post('/profile', function(request, response, next){
 			return next(err);
 		}
 		else if (!user){
-			console.log('texas: ' + JSON.stringify(info));
 			return response.status(401).json(info);
 		}
 		else {
@@ -898,7 +896,6 @@ router.post('/milestones', function(request, response, next){
 		var lastNicotineUsageDate = user.dashboard.dateQuit;
 
 		if (user.nicotineUsages.length > 0){
-			console.log('well shit');
 			var dates = user.nicotineUsages.map(function(u){
 				return u.dateUsed;
 			});
@@ -914,7 +911,6 @@ router.post('/milestones', function(request, response, next){
 			.select('milestoneText')
 			.exec(function(err, milestones){
 				var completedMilestones = [];
-				console.log('more cliffords: ' + daysSinceQuit(lastNicotineUsageDate) + ' - ' + milestones.length);
 
 				for (var i = 0; i < milestones.length; i++){
 					var text = milestones[i].milestoneText;
@@ -941,13 +937,13 @@ router.get('/stories', function(request, response, next){
 	// Story.syncRandom(function(err, result){
 	// 	console.log('update: ' + result.updated);
 	// });
-	var isLoadingMore = (request.query.id && request.query.id !== 'undefined');
+	//													 55ac4d40e4b039b585486fc4
 
-	var lastTimestamp =  isLoadingMore ?
-							new ObjectId(request.query.id).getTimestamp() :
-							null;
-	var earliestTimestamp = isLoadingMore ? lastTimestamp : '2100/01/01'
-	var storiesLimit = isLoadingMore ? 7 : 15;
+	// var lastTimestamp =  isLoadingMore ?
+	// 						new ObjectId(request.query.id).getTimestamp() :
+	// 						null;
+	// var earliestTimestamp = isLoadingMore ? lastTimestamp : '2100/01/01'
+	 var storiesLimit = isLoadingMore ? 7 : 15;
 
 	var objectIdWithTimestamp = function(timestamp) {
 	    // Convert string date to Date object (otherwise assume timestamp is a date)
@@ -958,26 +954,36 @@ router.get('/stories', function(request, response, next){
 	    // Convert date object to hex seconds since Unix epoch
 	    var hexSeconds = Math.floor(timestamp/1000).toString(16);
 
-	    // Create an ObjectId with that hex timestamp
+	    // Create an ObjectId with that hex timestamp    
 	    var constructedObjectId = ObjectId(hexSeconds + "0000000000000000");
 
-	    return constructedObjectId
+	    return constructedObjectId;
+	}
+
+	if (request.query.page){
+		var now = new Date().getTime();
+		earliestID = objectIdWithTimestamp(now);
+	}
+	else {
+		var isLoadingMore = (request.query.id && request.query.id !== 'undefined');
+		var earliestID = isLoadingMore ? request.query.id : "000000000000000000000000";
 	}
 
 	Story.find({
 		isTopStory: false,
-		_id: { $lt: objectIdWithTimestamp(earliestTimestamp) } // INSERT TIMESTAMP
+		_id: { $lt: earliestID } // INSERT TIMESTAMP
 	})
 	.limit(storiesLimit)
 	.sort('-_id')
 	//.where('isTestStory: false')
 	.exec(function(err, stories){
 		if (err) { return next(err); }
-
-
-
-		//randomSort(stories);
-		console.log('stories len: ' + stories.length);
 		return response.json({ stories: stories});
 	});
+});
+
+router.get('/sortStories', function(request, response, next){
+	// Story.aggregate([
+	// 		{ $sort: {''} }
+	// 	]);
 });

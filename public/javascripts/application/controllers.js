@@ -251,20 +251,52 @@ app.controller('StoriesCtrl', [
 			$scope.listViewStories.push(storyInfos[i]);
 		}
 
-		$scope.noStoriesRemaining = false;
+		$scope.isAtEndOfStories = false;
+		$scope.lastIndex = $scope.listViewStories.length - 1;
+		$scope.earliestID = $scope.listViewStories[$scope.listViewStories.length - 1]._id;
 
 		$scope.getMoreStories = function(){
-			var lastIndex = $scope.listViewStories.length - 1;
-			var newStories = stories.getMoreStories($scope.listViewStories[lastIndex]._id);
-			
-			if (newStories.length === 0){
-				$scope.noStoriesRemaining = true;
-			}
-			else $scope.listViewStories.push(newStories);
+			//var lastIndex = $scope.listViewStories.length - 1;
+			//var updatedStories = [];
+			//console.log('damn: ' + $scope.lastIndex + ' ' + $scope.earliestID + ' ' + !$scope.isAtEndOfStories);
+			if ($scope.earliestID && !$scope.isAtEndOfStories && !$scope.isInRequest){
+				//console.log('fuck yesm');
+				$scope.isInRequest = true;
+				stories.getMoreStories($scope.earliestID, 
+					function(newStories){
+						if (newStories.length === 0){
+							$scope.isAtEndOfStories = true;
+						}
+						else {
+							$scope.lastIndex += newStories.length;
+							$scope.earliestID = newStories[newStories.length - 1]._id;
+							$scope.isInRequest = false;
+						} //$scope.listViewStories.push(newStories);
 
+						for (var i = 0; i < newStories.length; i++){
+							var storyLink = document.createElement('a');
+							storyLink.setAttribute('ng-click', 'setActive(\'none\')');
+							storyLink.setAttribute('ng-href', '#/stories/' + newStories[i]._id);
+							storyLink.setAttribute('href', '#/stories/' + newStories[i]._id);
+							storyLink.text = newStories[i].title;
+
+							var lineBreak = document.createElement('hr');
+							lineBreak.setAttribute('class', 'storyBreak');
+
+							var container = document.createElement('div');
+							container.setAttribute('class', 'listStoryArea');
+							container.appendChild(storyLink);
+							container.appendChild(lineBreak);
+
+							var storiesListView = document.getElementById('storiesListView');
+							storiesListView.appendChild(container);
+						}
+					}
+				);
+			}
 		}
 		$scope.noStoriesRemaining = function(){
-			return $scope.noStoriesRemaining;
+			return $scope.isAtEndOfStories;
 		}
 	}
 ]);

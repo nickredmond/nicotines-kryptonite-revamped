@@ -17,15 +17,13 @@ app.factory('stories', [
 		};
 		service.retrieveStoryPage = function(page_number){
 			return $http.get('/stories?page=' + page_number).then(function(response){
-				//alert('yo dawg: ' + JSON.stringify(response.data.stories));
 				return response.data.stories;
 			});
 		};
 
-		service.getMoreStories = function(id){
-			alert("I need more stories!");
-			return $http.get('/stories?id=' + id).then(function(response){
-				return response.data.stories;
+		service.getMoreStories = function(id,  newStoriesCallback){
+			$http.get('/stories?id=' + id).then(function(response){
+				newStoriesCallback(response.data.stories);
 			});
 		};
 
