@@ -49,6 +49,13 @@ app.controller('DashboardCtrl', [
 		$scope.dashboard.percentTowardGoal = 100 * ($scope.dashboard.moneySaved / $scope.dashboard.financialGoalCost);
 		nav.areMilestonesEnabled = auth.areMilestonesEnabled;
 
+		var nicotineTypes = [];
+		for (var i = 0; i < auth.nicotineUsages.length; i++){
+			if (!nicotineTypes.includes(auth.nicotineUsages[i].nicotineType)){
+				nicotineTypes.push(auth.nicotineUsages[i].nicotineType);
+			}
+		}
+
 		var resetNicotineHistoryChart = function(){
 			var canvas = document.querySelector('#nicotineHistoryChart');
 			if (canvas) canvas.remove();
@@ -57,9 +64,77 @@ app.controller('DashboardCtrl', [
 			var canvas = document.querySelector('#nicotineHistoryChart');
 
 			var context = document.getElementById('nicotineHistoryChart').getContext('2d');
-			var chartData = generateChartData(auth.nicotineUsages, $scope.chartTimespan);
+			var chartData = generateChartData(auth.nicotineUsages, nicotineTypes, $scope.chartTimespan);
+			
 			var chart = new Chart(context).Line(chartData.data, chartData.options);
 		};
+
+		var legendInfos = [
+			{
+				nicotineType: 'cigarette',
+				color: 'rgb(220,220,220)',
+				text: 'Cigarettes'
+			},
+			{
+				nicotineType: 'smokeless',
+				color: 'rgb(255,130,188)',
+				text: 'Smokeless Tobacco'
+			},
+			{
+				nicotineType: 'cigar',
+				color: 'rgb(142, 209, 79)',
+				text: 'Cigars'
+			},
+			{
+				nicotineType: 'lozenge',
+				color: 'rgb(151,187,205)',
+				text: 'Nicotine Lozenges'
+			}
+		];
+
+		var legend = document.getElementById('nicotineTypesLegend');
+
+		for (var i = 0; i < legendInfos.length; i++){
+			console.log('check it: ' + JSON.stringify(nicotineTypes));
+			if (nicotineTypes.includes(legendInfos[i].nicotineType)){
+				var legendRow = document.createElement('div');
+				legendRow.style.marginBottom = '10px';
+
+				var labelColor = document.createElement('span');
+				labelColor.setAttribute('class', 'label');
+				labelColor.style.backgroundColor = legendInfos[i].color;
+				labelColor.style.color = 'transparent';
+				labelColor.style.borderRadius = '5px';
+				labelColor.innerHTML = '_';
+
+				var labelText = document.createElement('span');
+				labelText.style.marginLeft = '10px';
+				labelText.innerHTML = legendInfos[i].text;
+
+				legendRow.appendChild(labelColor);
+				legendRow.appendChild(labelText);
+				legend.appendChild(legendRow);
+			}
+		}
+
+		// <div class="legendRow">
+	 //      <span class="label label-success keyLabel successColorLabel">_</span>
+	 //      <span>= Money Saved</span>
+	 //    </div>
+
+		// 	if (nicotineTypes.includes('lozenge')){
+		// 	console.log('num 4');
+		// 	datasetList.push({
+	 //            label: "Nicotine lozenges used",
+	 //            fillColor: "rgba(151,187,205,0.2)",
+	 //            strokeColor: "rgba(151,187,205,1)",
+	 //            pointColor: "rgba(151,187,205,1)",
+	 //            pointStrokeColor: "#fff",
+	 //            pointHighlightFill: "#fff",
+	 //            pointHighlightStroke: "rgba(151,187,205,1)",
+	 //            data: chartAxisData.usageData['lozenge'] 
+	 //        });
+		// }
 
 		$scope.chartTimespan = 'week';
 		resetNicotineHistoryChart();

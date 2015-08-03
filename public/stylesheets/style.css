@@ -227,3 +227,9 @@ a {
 	width: auto;
 	display: inline-block;
 }
+
+#nicotineTypesLegend {
+	border: 2px solid #DDD;
+	border-radius: 0.8em;
+	padding: 0.5em;
+}

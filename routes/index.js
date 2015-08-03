@@ -333,7 +333,7 @@ function handleLogin(isNewToken, user, request, response, next, info){
 						subgreeting: "You can do this!",
 						financialGoalCost: (hasFinancialGoal ? user.dashboard.financialGoalCost : -1),
 						moneySaved: calculateMoneySaved(user),
-						cravingLevel: calculateCravingLevel(user)
+						cravingLevel: calculateCravingLevel(user),
 					}
 				});
 			});
@@ -438,6 +438,7 @@ router.post('/profile', function(request, response, next){
 				cigarettePrice: user.cigarettePrice,
 				dipPrice: user.dipPrice,
 				cigarPrice: user.cigarPrice,
+				quittingMethod: user.quittingMethod,
 				infoMessage: userMessage,
 				financialGoalItem: user.dashboard.financialGoal,
 				financialGoalCost: user.dashboard.financialGoalCost

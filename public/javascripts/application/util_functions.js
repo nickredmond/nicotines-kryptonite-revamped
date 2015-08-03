@@ -1,3 +1,32 @@
+if (![].includes) {
+  Array.prototype.includes = function(searchElement /*, fromIndex*/ ) {
+    'use strict';
+    var O = Object(this);
+    var len = parseInt(O.length) || 0;
+    if (len === 0) {
+      return false;
+    }
+    var n = parseInt(arguments[1]) || 0;
+    var k;
+    if (n >= 0) {
+      k = n;
+    } else {
+      k = len + n;
+      if (k < 0) {k = 0;}
+    }
+    var currentElement;
+    while (k < len) {
+      currentElement = O[k];
+      if (searchElement === currentElement ||
+         (searchElement !== searchElement && currentElement !== currentElement)) {
+        return true;
+      }
+      k++;
+    }
+    return false;
+  };
+}
+
 function populateStates(){
 	var statesList = [
 			/*'AL', 'AK',*/ 'AZ',/* 'AR', 'CA', 'CO', 'CT', 'D.C.', 'DE', 'FL',
@@ -225,33 +254,76 @@ var chartDataFunctionMappings = {
 	}
 }
 
-function generateChartData(nicotineUsages, timespan){
-		var chartAxisData = chartDataFunctionMappings[timespan](nicotineUsages);
+function generateChartData(nicotineUsages, nicotineTypes, timespan){
+	var datasetList = [];
+	var chartAxisData = chartDataFunctionMappings[timespan](nicotineUsages);
 
-		var data = {
+	if (nicotineTypes.includes('cigarette')){
+		console.log('num 1');
+		datasetList.push({
+            label: "Cigarettes used",
+            fillColor: "rgba(220,220,220,0.2)",
+            strokeColor: "rgba(220,220,220,1)",
+            pointColor: "rgba(220,220,220,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            data: chartAxisData.usageData['cigarette']
+        });
+	}
+	if (nicotineTypes.includes('smokeless')){
+		console.log('num 2');
+		datasetList.push({
+            label: "Dips/pouches taken",
+            fillColor: "rgba(255,130,188,0.2)",
+            strokeColor: "rgba(255,130,188,1)",
+            pointColor: "rgba(255,130,188,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(255,130,188,1)",
+            data: chartAxisData.usageData['smokeless'] 
+        });
+	}
+	if (nicotineTypes.includes('cigar')){
+		console.log('num 3');
+		datasetList.push({
+            label: "Cigars used",
+            fillColor: "rgba(142, 209, 79,0.2)",
+            strokeColor: "rgba(142, 209, 79,1)",
+            pointColor: "rgba(142, 209, 79,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(142, 209, 79,1)",
+            data: chartAxisData.usageData['cigar'] 
+        });
+	}
+	if (nicotineTypes.includes('ecig')){
+		
+	}
+	if (nicotineTypes.includes('lozenge')){
+		console.log('num 4');
+		datasetList.push({
+            label: "Nicotine lozenges used",
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,1)",
+            data: chartAxisData.usageData['lozenge'] 
+        });
+	}
+	if (nicotineTypes.includes('patch')){
+		
+	}
+	if (nicotineTypes.includes('gum')){
+		
+	}
+
+	console.log('nuh nuh, nuh nuhhh: ' + datasetList);
+	var data = {
 	    labels: chartAxisData.labels,
-	    datasets: [
-	        {
-	            label: "Cigarettes used",
-	            fillColor: "rgba(220,220,220,0.2)",
-	            strokeColor: "rgba(220,220,220,1)",
-	            pointColor: "rgba(220,220,220,1)",
-	            pointStrokeColor: "#fff",
-	            pointHighlightFill: "#fff",
-	            pointHighlightStroke: "rgba(220,220,220,1)",
-	            data: chartAxisData.usageData['cigarette']
-	        },
-	        {
-	            label: "Nicotine lozenges used",
-	            fillColor: "rgba(151,187,205,0.2)",
-	            strokeColor: "rgba(151,187,205,1)",
-	            pointColor: "rgba(151,187,205,1)",
-	            pointStrokeColor: "#fff",
-	            pointHighlightFill: "#fff",
-	            pointHighlightStroke: "rgba(151,187,205,1)",
-	            data: chartAxisData.usageData['lozenge'] 
-	        }
-	    ]
+	    datasets: datasetList
 	};
 	var options = {
 	    ///Boolean - Whether grid lines are shown across the chart

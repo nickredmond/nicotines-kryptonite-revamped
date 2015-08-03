@@ -38,4 +38,6 @@
     <option selected>week</option>
     <option>two weeks</option>
   </select>
+  <div id="nicotineTypesLegend" class="pull-right">
+  </div>
 </div>
