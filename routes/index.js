@@ -466,6 +466,8 @@ function authenticateWithToken(request, response, next, callback){
 
 router.post('/updateprofile', function(request, response, next){
 	var PRICE_PATTERN = /^\d+(?:\.\d{1,2})?$/;
+	var NUMBER_PATTERN = /^\d+$/;
+	var DATE_PATTERN = /^(\d){4}\-(\d){2}\-(\d){2}T(\d){2}:(\d){2}:(\d){2}\.(\d){3}Z$/ // 2015-08-01T18:42:25.591Z
 	var hasSentResponse = false;
 
 	var sendResponse = function(status, message){
@@ -535,6 +537,18 @@ router.post('/updateprofile', function(request, response, next){
 			for (var i = 0; i < request.body.nicotineUsages.length; i++){
 				var usageInfo = request.body.nicotineUsages[i];
 				usageInfo.nicotineType = nicotineTypeMappings[usageInfo.nicotineType];
+
+				console.log('date: ' + usageInfo.date);
+
+				if (!NUMBER_PATTERN.test(usageInfo.quantity)){
+					return sendResponse(400, "Quantity used must be a number.");
+				}
+				else if (!DATE_PATTERN.test(usageInfo.date)){
+					return sendResponse(400, "Date used is invalid.");
+				}
+				else if (new Date(usageInfo.date) > new Date()){
+					return sendResponse(400, "Date used cannot be in the future.");
+				}
 
 				NicotineUsage.create({
 					dateUsed: usageInfo.date,

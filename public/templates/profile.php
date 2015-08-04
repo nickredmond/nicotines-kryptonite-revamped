@@ -16,15 +16,15 @@
   </div>
   <div>
     <h3>Update your tobacco prices <small>(So we know how much youll save)</small></h3>
-    <div ng-show="cigarettePrice && cigarettePrice > 0" class="input-group user-form-control">
+    <div ng-show="cigarettePrice" class="input-group user-form-control">
       <span class="input-group-addon">Cigarette Price (per pack)</span>
       <input type="text" class="form-control" ng-model="cigarettePrice" />
     </div>
-    <div ng-show="dipPrice && dipPrice > 0" class="input-group user-form-control">
+    <div ng-show="dipPrice" class="input-group user-form-control">
       <span class="input-group-addon">Smokeless Price (per can/tin)</span>
       <input type="text" class="form-control" ng-model="dipPrice" />
     </div>
-    <div ng-show="cigarPrice && cigarPrice > 0" class="input-group user-form-control">
+    <div ng-show="cigarPrice" class="input-group user-form-control">
       <span class="input-group-addon">Cigar Price</span>
       <input type="text" class="form-control"ng-model="cigarPrice" />
     </div>

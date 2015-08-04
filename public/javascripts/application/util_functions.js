@@ -177,6 +177,12 @@ var generateChartData_twoWeeks = function(nicotineUsages){
 
 		var daysFromStart = daydiff(today, dateUsed);
 		var usageIndex = Math.round(daysFromStart / 2);
+
+		var chartLength = usageData[nextUsage.nicotineType].length;
+		if (chartLength <= usageIndex){
+			usageIndex = chartLength - 1;
+		}
+
 		usageData[nextUsage.nicotineType][usageIndex] += nextUsage.quantityUsed;
 	}
 
@@ -197,11 +203,6 @@ var generateChartData_oneWeek = function(nicotineUsages){
 		'gum': [0, 0, 0, 0, 0, 0, 0],
 		'ecig': [0, 0, 0, 0, 0, 0, 0]
 	};
-	// week, 2 weeks, month, year
-	// sun, mon, tue...
-	// 1/21, 1/23, 1/25...
-	// 1/21-1/27, 1/28-2/3, 2/4-2/10, 2/11-2/20 <- remainder?
-	// Jul, Aug, Sept...
 
 // --- ONE WEEK AGO FROM TODAY IS THE SAME DAY OF WEEK
 	var dayOfWeekIndex = new Date().getDay();
@@ -234,7 +235,10 @@ var generateChartData_oneWeek = function(nicotineUsages){
 		var nextUsage = nicotineUsages[i];
 		var dayUsed = new Date(nextUsage.dateUsed).getDay();
 
-		var usageIndex = calculateDayUsageIndex(startingIndex, dayUsed);
+		var dateIsToday = (new Date(nextUsage.dateUsed).setHours(0,0,0,0) === new Date().setHours(0,0,0,0));
+		var usageIndex = dateIsToday ? 
+							(DAYS_PER_WEEK - 1) : 
+							calculateDayUsageIndex(startingIndex, dayUsed);
 		usageData[nextUsage.nicotineType][usageIndex] += nextUsage.quantityUsed;
 		// increment counts, don't need the sort...?
 	}
@@ -320,7 +324,10 @@ function generateChartData(nicotineUsages, nicotineTypes, timespan){
 		
 	}
 
-	console.log('nuh nuh, nuh nuhhh: ' + datasetList);
+	console.log('ok wtf: ' + JSON.stringify(chartAxisData));
+	//console.log('nuh nuh, nuh nuhhh: ' + JSON.stringify(datasetList));
+	//console.log('and then: ' + JSON.stringify(nicotineUsages));
+
 	var data = {
 	    labels: chartAxisData.labels,
 	    datasets: datasetList
