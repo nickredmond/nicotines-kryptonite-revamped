@@ -233,3 +233,9 @@ a {
 	border-radius: 0.8em;
 	padding: 0.5em;
 }
+
+#backToSiteLink {
+	float: left;
+	margin-right: 50%;
+	margin-bottom: 1em;
+}

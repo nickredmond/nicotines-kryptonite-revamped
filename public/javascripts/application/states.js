@@ -108,7 +108,12 @@ app.config([
 					return stories.retrieveStoryPage(1);
 				}]
 			}
-		})
+		});
+		$stateProvider.state('particles', {
+			url: '/particles',
+			templateUrl: '/templates/particles.php',
+			controller: 'ParticlesCtrl'
+		});
 
 		$urlRouterProvider.otherwise('home');
 	}

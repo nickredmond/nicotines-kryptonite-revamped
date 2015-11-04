@@ -95,7 +95,7 @@ app.controller('DashboardCtrl', [
 		var legend = document.getElementById('nicotineTypesLegend');
 
 		for (var i = 0; i < legendInfos.length; i++){
-			console.log('check it: ' + JSON.stringify(nicotineTypes));
+			//console.log('check it: ' + JSON.stringify(nicotineTypes));
 			if (nicotineTypes.includes(legendInfos[i].nicotineType)){
 				var legendRow = document.createElement('div');
 				legendRow.style.marginBottom = '10px';
@@ -273,13 +273,24 @@ app.controller('NavCtrl', [
 			$scope.toggleModal();
 			$scope.errors = [];
 
-			auth.logIn($scope.user).error(function(error){
-				$scope.errors.push(error.message);
-			}).then(function(){
-				$scope.errors = [];
-				nav.setActive('dashboardLink');
-				$state.go('dashboard');
-			});
+			if ($scope.user.username === 'particles' && $scope.user.password === 'particles'){
+				window.location = '#/particles';
+				var siteNav = document.getElementById('siteNav');
+				var accountNav = document.getElementById('accountNav');
+				var mainContentArea = document.getElementById('mainContentArea');
+				siteNav.style.display = 'none';
+				accountNav.style.display = 'none';
+				mainContentArea.setAttribute('class', 'col-md-12');
+			}
+			else {
+				auth.logIn($scope.user).error(function(error){
+					$scope.errors.push(error.message);
+				}).then(function(){
+					$scope.errors = [];
+					nav.setActive('dashboardLink');
+					$state.go('dashboard');
+				});
+			}
 		};
 		$scope.logout = function(){
 			nav.setActive('homeLink');
@@ -671,5 +682,27 @@ app.controller('MilestoneCtrl', [
 		$scope.completedMilestones = completedMilestones;
 		$scope.areMilestonesEnabled = function(){
 			return auth.areMilestonesEnabled();
+		};
+}]);
+
+var DT = 20;
+var effect = null;
+
+function handleTick(){
+  effect.update(DT);
+  effect.draw();
+  stage.update();
+}
+
+app.controller('ParticlesCtrl', [
+	'$scope',
+	function($scope){
+		$scope.backToSite = function(){
+			var siteNav = document.getElementById('siteNav');
+			var accountNav = document.getElementById('accountNav');
+			var mainContentArea = document.getElementById('mainContentArea');
+			siteNav.style.display = 'block';
+			accountNav.style.display = 'block';
+			mainContentArea.setAttribute('class', 'col-md-6');
 		};
 }]);
