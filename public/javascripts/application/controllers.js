@@ -739,6 +739,9 @@ app.controller('ParticlesCtrl', [
 		};
 
 		$scope.backToSite = function(){
+			createjs.Ticker.removeEventListener('tick', handleTick);
+			effect.destroy();
+
 			var siteNav = document.getElementById('siteNav');
 			var accountNav = document.getElementById('accountNav');
 			var mainContentArea = document.getElementById('mainContentArea');
@@ -762,9 +765,12 @@ app.controller('ParticlesCtrl', [
 
 		  var particleCount = PARTICLE_COUNT_MAPPINGS[document.getElementById('countControl').value];
 		  var particleSize = PARTICLE_SIZE_MAPPINGS[document.getElementById('sizeControl').value];
+		  var speedRange = PARTICLE_SPEED_MAPPINGS[document.getElementById('speedControl').value];
+		  var airResistance = AIR_RESISTANCE_MAPPINGS[document.getElementById('resistanceControl').value];
+		  var windSpeed = WIND_MAPPINGS[document.getElementById('windControl').value];
 
 		  effect.destroy();
 		  effect = new MouseParticleEffect(particleCount, baseColor, colorChangeParts, particleSize, 1.5,
-		    stage, canvas);
+		    speedRange, airResistance, windSpeed, stage, canvas);
 		};
 }]);

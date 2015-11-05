@@ -102,20 +102,21 @@ Particle.prototype = Object.create(Graphic.prototype);
 Particle.prototype.constructor = Particle;
 
 Particle.prototype.kill = function(){
+  this.hasBeenKilled = true;
   this.stage.removeChild(this.shape);
 };
 
 Particle.prototype.update = function(dt){
   this.performAging(dt);
-
   //console.log('velxx ' + this.shape.x + ' - ' + this.shape.y);
+  //console.log('huh ' + this.xVelocity + ' ' + this.yVelocity);
 
   if (this.isAlive()){
     this.updateTraits();
     this.shape.x += this.xVelocity;
     this.shape.y += this.yVelocity;
-    this.xVelocity += this.xAcceleration;
-    this.yVelocity += this.yAcceleration;
+    this.xVelocity += (this.xAcceleration * (dt / MILLISECONDS_PER_SECOND));
+    this.yVelocity += (this.yAcceleration * (dt / MILLISECONDS_PER_SECOND));
   }
 
   //console.log('bread ' + this.shape + ' - ' + this.shape.x + ' - ' + this.shape.y);

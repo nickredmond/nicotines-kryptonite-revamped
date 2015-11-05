@@ -3,6 +3,12 @@ var effect = null;
 var canvas = null;
 var stage = null;
 
+var handleTick = function(){
+  effect.update(DT);
+  effect.draw();
+  stage.update();
+}
+
 function Main(args){
   if (!Array.prototype.remove) {
     Array.prototype.remove = function(val) {
@@ -20,16 +26,10 @@ function Main(args){
   baseColor = new Color(50, 50, 255, 255);
   colorChangeParts = [ColorPart.RED, ColorPart.BLUE];
   effect = new MouseParticleEffect(10, baseColor, colorChangeParts, 10, 1.5,
-    stage, canvas);
+    [1,5], 1, 50, stage, canvas);
 
   createjs.Ticker.addEventListener('tick', handleTick);
   createjs.Ticker.setInterval(DT);
-}
-
-function handleTick(){
-  effect.update(DT);
-  effect.draw();
-  stage.update();
 }
 
 function addInputRangesToControls(){

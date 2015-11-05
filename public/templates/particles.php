@@ -6,6 +6,7 @@
 <script src="/javascripts/particles/models/ColorPart.js"></script>
 <script src="/javascripts/particles/models/Graphic.js"></script>
 <script src="/javascripts/particles/models/Particle.js"></script>
+<script src="/javascripts/particles/models/AirParticle.js"></script>
 <script src="/javascripts/particles/models/ParticleEffect.js"></script>
 <script src="/javascripts/particles/models/MouseParticleEffect.js"></script>
 <script src="/javascripts/particles/controllers/Startup.js"></script>

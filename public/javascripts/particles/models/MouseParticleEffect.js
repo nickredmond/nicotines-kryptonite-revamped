@@ -1,10 +1,19 @@
+var TERMINAL_VELOCITY = 800;
+
 var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangeParts, baseRadius, 
-    baseLifespan, stage, canvas){
+    baseLifespan, velocityRange, movementResistance, windSpeed, stage, canvas){
   ParticleEffect.call(this);
+
+  if (movementResistance < 0){
+    throw 'Movement resistance must be at least zero (represents a percentage of velocity per second)';
+  }
 
   this.particlesPerSecond = particlesPerSecond;
   this.baseColor = baseColor;
   this.baseRadius = baseRadius;
+  this.velocityRange = velocityRange;
+  this.movementResistance = movementResistance;
+  this.windSpeed = windSpeed;
   this.stage = stage;
   this.colorChangeParts = colorChangeParts;
   this.numberParticlesToCreate = 0;
@@ -73,7 +82,8 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
       else {
         particle = this.particles[i];
 
-        if (particle.xVelocity * particle.xAcceleration > 0){
+        if (particle.xVelocity * particle.xAcceleration > 0 &&
+          particle.windSpeed === MIN_WIND_SPEED){
           particle.xVelocity = 0;
           particle.xAcceleration = 0;
         }
@@ -81,7 +91,7 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
           particle.yVelocity = 0;
           particle.yAcceleration = 0;
         }
-
+        
         particle.update(dt);
       }
     }
@@ -95,26 +105,30 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
   };
 
   this.randomVelocity = function(){
-    minVelocity = -this.MAX_VELOCITY;
-    maxVelocity = this.MAX_VELOCITY * 2;
+    var velocityLimit = this.velocityRange ? 
+      this.velocityRange[1] : 
+      this.MAX_VELOCITY;
+    var velocityRequirement = this.velocityRange ?
+      this.velocityRange[0] :
+      this.MIN_VELOCITY;
+
+    minVelocity = -velocityLimit;
+    maxVelocity = velocityLimit * 2;
     velocity = (Math.random() * maxVelocity) + minVelocity;
     absoluteVelocity = Math.abs(velocity);
     multiplier = velocity / absoluteVelocity;
 
     //console.log('mushrooms ' + this.MIN_VELOCITY);
 
-    if (absoluteVelocity < this.MIN_VELOCITY){
-      velocity = this.MIN_VELOCITY * multiplier;
+    if (absoluteVelocity < velocityRequirement){
+      velocity = velocityRequirement * multiplier;
     }
 
     return velocity;
   }
 
-  function randomAcceleration(velocity){
-    acceleration = (Math.random() * 0.4) + 0.1;
-    if (velocity > 0){
-      acceleration *= -1;
-    }
+  this.randomAcceleration = function(velocity){
+    var acceleration = -1 * this.movementResistance * velocity; //(Math.random() * 0.4) + 0.1;
 
     return acceleration;
   }
@@ -166,16 +180,16 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
       endingRadius = 1;
     }
 
-    particle = new Particle(lifespan, [startingColor, endingColor],
-      [startingRadius, endingRadius], this.stage);
+    particle = new AirParticle(lifespan, [startingColor, endingColor],
+      [startingRadius, endingRadius], this.stage, this.windSpeed, TERMINAL_VELOCITY);
 
     //console.log('inlaws' + this.mousePosition.x + '-' + this.mousePosition.y);
     particle.setPosition(this.mousePosition);
 
     var xVelocity = this.randomVelocity();
     var yVelocity = this.randomVelocity();
-    var xAcceleration = randomAcceleration(xVelocity);
-    var yAcceleration = randomAcceleration(yVelocity);
+    var xAcceleration = this.randomAcceleration(xVelocity);
+    var yAcceleration = this.randomAcceleration(yVelocity);
     //console.log('turnips ' + xVelocity);
     particle.xVelocity = xVelocity;
     particle.yVelocity = yVelocity;

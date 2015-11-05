@@ -8,8 +8,6 @@ function add_range(id, min, max, step, parent_id, is_value_displayed, step_mappi
   range.setAttribute('step', step);
   range.setAttribute('id', id);
   
-  console.log('balls ' + id + ' ' + min + ' ' + max + ' ' + step + ' ' + parent_id + ' ' + is_value_displayed);
-  
   var data_list_id = 'steplist' + current_range_number;
   range.setAttribute('list', data_list_id);
   
