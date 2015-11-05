@@ -748,8 +748,8 @@ app.controller('ParticlesCtrl', [
 		};
 
 		$scope.updateParticles = function(){
-			baseColor = hexToRgb($scope.color);
-		  colorChangeParts = [];
+			var baseColor = hexToRgb($scope.color);
+		  var colorChangeParts = [];
 		  if (baseColor.red > COLOR_DOMINANCE_THRESHOLD){
 		  	colorChangeParts.push(ColorPart.RED);
 		  }
@@ -760,8 +760,11 @@ app.controller('ParticlesCtrl', [
 		  	colorChangeParts.push(ColorPart.BLUE);
 		  }
 
+		  var particleCount = PARTICLE_COUNT_MAPPINGS[document.getElementById('countControl').value];
+		  var particleSize = PARTICLE_SIZE_MAPPINGS[document.getElementById('sizeControl').value];
+
 		  effect.destroy();
-		  effect = new MouseParticleEffect(20, baseColor, colorChangeParts, 7, 1.5,
+		  effect = new MouseParticleEffect(particleCount, baseColor, colorChangeParts, particleSize, 1.5,
 		    stage, canvas);
 		};
 }]);

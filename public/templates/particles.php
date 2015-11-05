@@ -21,7 +21,7 @@
         <h4>Base Color</h4>
         <color-picker ng-model="color">
         </color-picker>
-        <input type="text" ng-model="color" ng-init="color = '#f05a28'" />
+        <input type="text" ng-model="color" ng-init="color = '#3232FF'" />
       </div>
       <div id="staticTraitsControls" class="particleControlsColumn">
         <div id="sizeControlDiv">

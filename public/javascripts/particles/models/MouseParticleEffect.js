@@ -17,7 +17,7 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
     configurable: true
   });
   Object.defineProperty(this, 'MAX_RADIUS_DELTA', {
-    value: 5,
+    value: 2,
     writable: false,
     enumerable: true,
     configurable: true
@@ -35,7 +35,7 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
     configurable: true
   });
   Object.defineProperty(this, 'MAX_RADIUS_CHANGE', {
-    value: 15,
+    value: 6,
     writable: false,
     enumerable: true,
     configurable: true
@@ -155,11 +155,16 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
     startingRadiusMin = this.baseRadius - this.MAX_RADIUS_DELTA;
     startingRadius = (Math.random() * startingRadiusRange) + startingRadiusMin;
 
-    //console.log('tater tots ' + this.baseRadius + ' - ' + startingRadiusMin + ' - ' + startingRadius);
-
     endingRadiusRange = this.MAX_RADIUS_CHANGE;
     endingRadiusMin = startingRadius;
     endingRadius = (Math.random() * endingRadiusRange) + endingRadiusMin;
+
+    if (startingRadius < 0){
+      startingRadius = 0.5;
+    }
+    if (endingRadius < 0){
+      endingRadius = 1;
+    }
 
     particle = new Particle(lifespan, [startingColor, endingColor],
       [startingRadius, endingRadius], this.stage);

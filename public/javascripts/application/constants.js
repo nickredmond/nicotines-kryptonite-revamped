@@ -17,4 +17,21 @@ var DAY_OF_WEEK_MAPPINGS = {
 var DAYS_PER_WEEK = 7;
 var DAYS_PER_TWO_WEEKS = 14;
 
+// PARTICLE CONSTANTS
 var COLOR_DOMINANCE_THRESHOLD = 150;
+
+var PARTICLE_COUNT_MAPPINGS = {
+  '0': 2,
+  '1': 8,
+  '2': 15,
+  '3': 30,
+  '4': 60
+};
+
+var PARTICLE_SIZE_MAPPINGS = {
+  '0': 1,
+  '1': 5,
+  '2': 10,
+  '3': 15,
+  '4': 30
+};
