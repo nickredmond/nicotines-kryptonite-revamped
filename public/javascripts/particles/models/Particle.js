@@ -101,6 +101,10 @@ var Particle = function(lifeSpanSeconds, colors, radii, stage){
 Particle.prototype = Object.create(Graphic.prototype);
 Particle.prototype.constructor = Particle;
 
+Particle.prototype.kill = function(){
+  this.stage.removeChild(this.shape);
+};
+
 Particle.prototype.update = function(dt){
   this.performAging(dt);
 

@@ -1,0 +1,28 @@
+#particleContainer {
+  margin-left: auto;
+  margin-right: auto;
+  width: 800px;
+}
+
+#baseColorPicker {
+  float: left;
+  width: 300px;
+}
+
+.particleControlsColumn {
+  float: left;
+  width: 160px;
+  margin-left: 6px;
+}
+
+#updateParticlesButton {
+  margin: 1em 0 1em 0;
+}
+
+.particlesLink {
+  margin: 0 1em 0 0;
+}
+
+#particlesHeaderDiv {
+  margin-bottom: 1em;
+}

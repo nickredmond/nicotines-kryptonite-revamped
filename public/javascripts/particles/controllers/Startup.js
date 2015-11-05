@@ -1,5 +1,7 @@
 var DT = 20;
 var effect = null;
+var canvas = null;
+var stage = null;
 
 function Main(args){
   if (!Array.prototype.remove) {
@@ -9,7 +11,7 @@ function Main(args){
     };
   }
 
-  console.log('nick redmond');
+  addInputRangesToControls();
 
   canvas = document.getElementById('mainCanvas');
   canvas.style.backgroundColor = '#000';
@@ -28,4 +30,48 @@ function handleTick(){
   effect.update(DT);
   effect.draw();
   stage.update();
+}
+
+function addInputRangesToControls(){
+  var size_mappings = {
+    '0': 'tiny',
+    '1': 'small',
+    '2': 'moderate',
+    '3': 'large',
+    '4': 'huge'
+  };
+  var number_particles_mappings = {
+    '0': 'almost none',
+    '1': 'a few',
+    '2': 'some',
+    '3': 'lots',
+    '4': 'tons'
+  };
+  var wind_mappings = {
+    '0': 'calm',
+    '1': 'slight breeze',
+    '2': 'breezy',
+    '3': 'windy',
+    '4': 'hurricane'
+  };
+  var speed_mappings = {
+    '0': 'barely moving',
+    '1': 'slow',
+    '2': 'moderate',
+    '3': 'fast',
+    '4': 'very fast'
+  };
+  var resistance_mappings = {
+    '0': 'none',
+    '1': 'mild',
+    '2': 'moderate',
+    '3': 'severe',
+    '4': 'extreme'
+  };
+
+  add_range('sizeControl', 0, 4, 1, 'sizeControlDiv', true, size_mappings);
+  add_range('countControl', 0, 4, 1, 'countControlDiv', true, number_particles_mappings);
+  add_range('speedControl', 0, 4, 1, 'speedControlDiv', true, speed_mappings);
+  add_range('windControl', 0, 4, 1, 'windControlDiv', true, wind_mappings);
+  add_range('resistanceControl', 0, 4, 1, 'resistanceControlDiv', true, resistance_mappings);
 }

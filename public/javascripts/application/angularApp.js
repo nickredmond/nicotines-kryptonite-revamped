@@ -1,4 +1,4 @@
-var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs', 'ngSanitize', 'infinite-scroll']);
+var app = angular.module('nicotinesKryptonite', ['ui.router', 'angular-momentjs', 'ngSanitize', 'infinite-scroll', 'mp.colorPicker']);
 
 app.run(['$rootScope', '$state', 'nav', 'signup', function($rootScope, $state, nav, signup){
 	$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error){

@@ -685,18 +685,59 @@ app.controller('MilestoneCtrl', [
 		};
 }]);
 
-var DT = 20;
-var effect = null;
+// var DT = 20;
+// var effect = null;
 
-function handleTick(){
-  effect.update(DT);
-  effect.draw();
-  stage.update();
-}
+// function handleTick(){
+//   effect.update(DT);
+//   effect.draw();
+//   stage.update();
+// }
 
 app.controller('ParticlesCtrl', [
 	'$scope',
 	function($scope){
+		// Courtesy of StackOverflow user Tim Down
+		function hexToRgb(hex) {
+	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+	        return r + r + g + g + b + b;
+	    });
+
+	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	    var color = null;
+
+	    if (result){
+	    	var r = parseInt(result[1], 16);
+		    var g = parseInt(result[2], 16);
+		    var b = parseInt(result[3], 16);
+
+		    color = new Color(r, g, b, 255);
+	    }
+
+	    return color;
+		}
+
+		$scope.isControlsAreaVisible = false;
+
+		$scope.isControlsVisible = function(){
+			return $scope.isControlsAreaVisible;
+		};
+
+		$scope.toggleControls = function(){
+			var controlsArea = document.getElementById('particleControls');
+			controlsArea.style.display = $scope.isControlsAreaVisible ?
+				'none' :
+				'block';
+			var toggleLink = document.getElementById('toggleControlsLink');
+			toggleLink.innerHTML = $scope.isControlsAreaVisible ?
+				'Show Controls' :
+				'Hide Controls';
+
+			$scope.isControlsAreaVisible = !$scope.isControlsAreaVisible;
+		};
+
 		$scope.backToSite = function(){
 			var siteNav = document.getElementById('siteNav');
 			var accountNav = document.getElementById('accountNav');
@@ -704,5 +745,23 @@ app.controller('ParticlesCtrl', [
 			siteNav.style.display = 'block';
 			accountNav.style.display = 'block';
 			mainContentArea.setAttribute('class', 'col-md-6');
+		};
+
+		$scope.updateParticles = function(){
+			baseColor = hexToRgb($scope.color);
+		  colorChangeParts = [];
+		  if (baseColor.red > COLOR_DOMINANCE_THRESHOLD){
+		  	colorChangeParts.push(ColorPart.RED);
+		  }
+		  if (baseColor.green > COLOR_DOMINANCE_THRESHOLD){
+		  	colorChangeParts.push(ColorPart.GREEN);
+		  }
+		  if (baseColor.blue > COLOR_DOMINANCE_THRESHOLD){
+		  	colorChangeParts.push(ColorPart.BLUE);
+		  }
+
+		  effect.destroy();
+		  effect = new MouseParticleEffect(20, baseColor, colorChangeParts, 7, 1.5,
+		    stage, canvas);
 		};
 }]);
