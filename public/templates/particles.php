@@ -2,6 +2,7 @@
 
 <script src="/javascripts/particles/enums/Direction.js"></script>
 <script src="/javascripts/particles/enums/Height.js"></script>
+<script src="/javascripts/particles/enums/ParticleBehavior.js"></script>
 <script src="/javascripts/particles/models/Color.js"></script>
 <script src="/javascripts/particles/models/ColorPart.js"></script>
 <script src="/javascripts/particles/models/Graphic.js"></script>
@@ -31,25 +32,33 @@
         <div id="countControlDiv">
           <h4>Number of Particles</h4>
         </div>
+        <div id="windControlDiv">
+          <h4>Wind</h4>
+        </div>
       </div>
       <div id="behaviorControls" class="particleControlsColumn">
-        <h4>Particle Behavior</h4>
-        <select id="behaviorControl">
-          <option>expanding</option>
-          <option>rising</option>
-        </select>
+        <div id="behaviorControlDiv">
+          <h4>Particle Behavior</h4>
+          <select class="form-control" id="behaviorControl">
+            <option>{{ expandingValue }}</option>
+            <option>{{ risingValue }}</option>
+          </select>
+        </div>
         <div id="speedControlDiv">
           <h4>Particle Speed</h4>
         </div>
+        <div id="resistanceControlDiv">
+          <h4>Air Resistance</h4>
+        </div>
       </div>
-      <div id="airControls" class="particleControlsColumn">
+      <!-- <div id="airControls" class="particleControlsColumn">
         <div id="windControlDiv">
           <h4>Wind</h4>
         </div>
         <div id="resistanceControlDiv">
           <h4>Air Resistance</h4>
         </div>
-      </div>
+      </div> -->
     </div>
     <button id="updateParticlesButton" class="btn btn-primary" ng-click="updateParticles()">Update</button>
   </div>

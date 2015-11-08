@@ -11,12 +11,16 @@
 
 .particleControlsColumn {
   float: left;
-  width: 160px;
-  margin-left: 6px;
+  width: 230px;
+  margin-right: 10px;
+  border-left: 2px solid #CCC;
+  padding-left: 10px;
 }
 
 #updateParticlesButton {
   margin: 1em 0 1em 0;
+  float: left;
+  clear: both;
 }
 
 .particlesLink {
@@ -25,4 +29,8 @@
 
 #particlesHeaderDiv {
   margin-bottom: 1em;
+}
+
+#behaviorControlDiv {
+  margin-bottom: 2.04em;
 }

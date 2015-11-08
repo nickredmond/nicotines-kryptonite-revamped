@@ -19,6 +19,8 @@ var DAYS_PER_TWO_WEEKS = 14;
 
 // PARTICLE CONSTANTS
 var COLOR_DOMINANCE_THRESHOLD = 150;
+var EXPANDING_PARTICLES_VALUE = 'expanding';
+var RISING_PARTICLES_VALUE = 'rising';
 
 var PARTICLE_COUNT_MAPPINGS = {
   '0': 2,
@@ -37,11 +39,11 @@ var PARTICLE_SIZE_MAPPINGS = {
 };
 
 var PARTICLE_SPEED_MAPPINGS = {
-  '0': [0.1, 1],
-  '1': [0.5, 2],
-  '2': [1, 5],
-  '3': [3, 12],
-  '4': [3, 25]
+  '0': [0.05, 1],
+  '1': [0.1, 2],
+  '2': [0.25, 5],
+  '3': [0.5, 12],
+  '4': [0.75, 25]
 };
 
 var AIR_RESISTANCE_MAPPINGS = {

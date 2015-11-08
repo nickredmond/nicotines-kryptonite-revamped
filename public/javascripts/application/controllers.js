@@ -719,7 +719,15 @@ app.controller('ParticlesCtrl', [
 	    return color;
 		}
 
+		console.log('aubrey donnelly: ' + RISING_PARTICLES_VALUE + ' ' + EXPANDING_PARTICLES_VALUE);
+		$scope.PARTICLE_BEHAVIOR_MAPPINGS = {
+		  'rising': ParticleBehavior.RISING,
+		  'expanding': ParticleBehavior.EXPANDING
+		};
+
 		$scope.isControlsAreaVisible = false;
+		$scope.expandingValue = EXPANDING_PARTICLES_VALUE;
+		$scope.risingValue = RISING_PARTICLES_VALUE;
 
 		$scope.isControlsVisible = function(){
 			return $scope.isControlsAreaVisible;
@@ -762,15 +770,16 @@ app.controller('ParticlesCtrl', [
 		  if (baseColor.blue > COLOR_DOMINANCE_THRESHOLD){
 		  	colorChangeParts.push(ColorPart.BLUE);
 		  }
-
+		  console.log('huh ' + document.getElementById('behaviorControl').value);
 		  var particleCount = PARTICLE_COUNT_MAPPINGS[document.getElementById('countControl').value];
 		  var particleSize = PARTICLE_SIZE_MAPPINGS[document.getElementById('sizeControl').value];
 		  var speedRange = PARTICLE_SPEED_MAPPINGS[document.getElementById('speedControl').value];
 		  var airResistance = AIR_RESISTANCE_MAPPINGS[document.getElementById('resistanceControl').value];
 		  var windSpeed = WIND_MAPPINGS[document.getElementById('windControl').value];
-
+		  var behavior = $scope.PARTICLE_BEHAVIOR_MAPPINGS[document.getElementById('behaviorControl').value];
+		  console.log('double huh ' + $scope.PARTICLE_BEHAVIOR_MAPPINGS['expanding'] + ' --- ' + $scope.PARTICLE_BEHAVIOR_MAPPINGS[document.getElementById('behaviorControl').value] + ' *** ' + behavior);
 		  effect.destroy();
 		  effect = new MouseParticleEffect(particleCount, baseColor, colorChangeParts, particleSize, 1.5,
-		    speedRange, airResistance, windSpeed, stage, canvas);
+		    speedRange, airResistance, windSpeed, behavior, stage, canvas);
 		};
 }]);

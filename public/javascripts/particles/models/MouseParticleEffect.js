@@ -1,7 +1,8 @@
 var TERMINAL_VELOCITY = 800;
+var VELOCITY_LIMIT_PERCENTAGE = 0.05;
 
 var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangeParts, baseRadius, 
-    baseLifespan, velocityRange, movementResistance, windSpeed, stage, canvas){
+    baseLifespan, velocityRange, movementResistance, windSpeed, behavior, stage, canvas){
   ParticleEffect.call(this);
 
   if (movementResistance < 0){
@@ -18,6 +19,7 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
   this.colorChangeParts = colorChangeParts;
   this.numberParticlesToCreate = 0;
   this.mousePosition = {x: 0, y: 0};
+  this.behavior = behavior;
 
   Object.defineProperty(this, 'MAX_RGBA_DELTA', {
     value: 20,
@@ -104,13 +106,17 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
     }
   };
 
-  this.randomVelocity = function(){
+  this.randomVelocity = function(isRising, isXVelocity){
     var velocityLimit = this.velocityRange ? 
       this.velocityRange[1] : 
       this.MAX_VELOCITY;
     var velocityRequirement = this.velocityRange ?
       this.velocityRange[0] :
       this.MIN_VELOCITY;
+
+    if (isRising && isXVelocity){
+      velocityLimit *= VELOCITY_LIMIT_PERCENTAGE;
+    }
 
     minVelocity = -velocityLimit;
     maxVelocity = velocityLimit * 2;
@@ -122,6 +128,9 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
 
     if (absoluteVelocity < velocityRequirement){
       velocity = velocityRequirement * multiplier;
+    }
+    if (isRising && !isXVelocity && velocity > 0){
+      velocity = -velocity;
     }
 
     return velocity;
@@ -186,8 +195,9 @@ var MouseParticleEffect = function(particlesPerSecond, baseColor, colorChangePar
     //console.log('inlaws' + this.mousePosition.x + '-' + this.mousePosition.y);
     particle.setPosition(this.mousePosition);
 
-    var xVelocity = this.randomVelocity();
-    var yVelocity = this.randomVelocity();
+    var isRising = (this.behavior === ParticleBehavior.RISING);
+    var xVelocity = this.randomVelocity(isRising, true);
+    var yVelocity = this.randomVelocity(isRising, false);
     var xAcceleration = this.randomAcceleration(xVelocity);
     var yAcceleration = this.randomAcceleration(yVelocity);
     //console.log('turnips ' + xVelocity);

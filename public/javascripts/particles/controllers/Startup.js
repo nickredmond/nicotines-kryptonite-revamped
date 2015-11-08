@@ -26,7 +26,7 @@ function Main(args){
   baseColor = new Color(50, 50, 255, 255);
   colorChangeParts = [ColorPart.RED, ColorPart.BLUE];
   effect = new MouseParticleEffect(10, baseColor, colorChangeParts, 10, 1.5,
-    [1,5], 1, 50, stage, canvas);
+    [0.2,5], 1, 50, ParticleBehavior.EXPANDING, stage, canvas);
 
   createjs.Ticker.addEventListener('tick', handleTick);
   createjs.Ticker.setInterval(DT);
