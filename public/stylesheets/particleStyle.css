@@ -1,20 +1,29 @@
 #particleContainer {
   margin-left: auto;
   margin-right: auto;
-  width: 800px;
+  width: 1150px;
 }
 
 #baseColorPicker {
+  float: left;
+  width: 300px;
+  margin-bottom: 1em;
+}
+
+#particleControls {
   float: left;
   width: 300px;
 }
 
 .particleControlsColumn {
   float: left;
-  width: 230px;
+  width: 140px;
+}
+
+#staticTraitsControls {
+  border-right: 2px solid #CCC;
   margin-right: 10px;
-  border-left: 2px solid #CCC;
-  padding-left: 10px;
+  padding-right: 10px;
 }
 
 #updateParticlesButton {
@@ -33,4 +42,8 @@
 
 #behaviorControlDiv {
   margin-bottom: 2.04em;
+}
+
+#baseColorHeader {
+  margin-top: 0;
 }

@@ -169,6 +169,8 @@
                     ngModel.$render = function () {
                         if (/^#[0-9A-Fa-f]{6}$/.test(ngModel.$viewValue)) {
                             $scope.color = ngModel.$viewValue;
+                            updateParticles($scope.color);
+                            
                             $scope.hsv = hexRgbToHsv($scope.color);
                             $scope.colorCursor = {
                                 x: $scope.hsv.s * 200,
@@ -210,6 +212,7 @@
 
                     if (typeof $scope.hsv.s !== 'undefined') {
                         $scope.color = hsvToHexRgb($scope.hsv);
+                        updateParticles($scope.color);
 
                         if (ngModel) {
                             ngModel.$setViewValue($scope.color);

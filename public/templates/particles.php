@@ -20,7 +20,7 @@
   <div id="particleControls" ng-show="isControlsVisible()">
     <div class="pull-left">
       <div id="baseColorPicker">
-        <h4>Base Color</h4>
+        <h4 id="baseColorHeader">Base Color</h4>
         <color-picker ng-model="color">
         </color-picker>
         <input type="text" ng-model="color" ng-init="color = '#3232FF'" />
@@ -60,7 +60,7 @@
         </div>
       </div> -->
     </div>
-    <button id="updateParticlesButton" class="btn btn-primary" ng-click="updateParticles()">Update</button>
+    <!-- <button id="updateParticlesButton" class="btn btn-primary" ng-click="updateParticles()">Update</button> -->
   </div>
   <canvas id="mainCanvas" width="800" height="600"></canvas>
 </div>

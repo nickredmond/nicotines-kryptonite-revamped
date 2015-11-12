@@ -370,3 +370,56 @@ function generateChartData(nicotineUsages, nicotineTypes, timespan){
 		options: options
 	};
 }
+
+// Courtesy of StackOverflow user Tim Down
+function hexToRgb(hex) {
+  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+  var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+      return r + r + g + g + b + b;
+  });
+
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  var color = null;
+
+  if (result){
+    var r = parseInt(result[1], 16);
+    var g = parseInt(result[2], 16);
+    var b = parseInt(result[3], 16);
+
+    color = new Color(r, g, b, 255);
+  }
+
+  return color;
+}
+
+//$scope.updateParticles = function
+function updateParticles(color){
+  var baseColor = color ? hexToRgb(color) : effect.baseColor;
+  var colorChangeParts = [];
+  if (baseColor.red > COLOR_DOMINANCE_THRESHOLD){
+    colorChangeParts.push(ColorPart.RED);
+  }
+  if (baseColor.green > COLOR_DOMINANCE_THRESHOLD){
+    colorChangeParts.push(ColorPart.GREEN);
+  }
+  if (baseColor.blue > COLOR_DOMINANCE_THRESHOLD){
+    colorChangeParts.push(ColorPart.BLUE);
+  }
+
+  var PARTICLE_BEHAVIOR_MAPPINGS = {
+    'rising': ParticleBehavior.RISING,
+    'expanding': ParticleBehavior.EXPANDING
+  };
+  
+  var particleCount = PARTICLE_COUNT_MAPPINGS[document.getElementById('countControl').value];
+  var particleSize = PARTICLE_SIZE_MAPPINGS[document.getElementById('sizeControl').value];
+  var speedRange = PARTICLE_SPEED_MAPPINGS[document.getElementById('speedControl').value];
+  var airResistance = AIR_RESISTANCE_MAPPINGS[document.getElementById('resistanceControl').value];
+  var windSpeed = WIND_MAPPINGS[document.getElementById('windControl').value];
+  var behavior = PARTICLE_BEHAVIOR_MAPPINGS[document.getElementById('behaviorControl').value];
+  
+  effect.destroy();
+  effect = new MouseParticleEffect(particleCount, baseColor, colorChangeParts, particleSize, 1.5,
+    speedRange, airResistance, windSpeed, behavior, stage, canvas);
+};

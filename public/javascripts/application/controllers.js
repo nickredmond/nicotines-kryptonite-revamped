@@ -697,33 +697,18 @@ app.controller('MilestoneCtrl', [
 app.controller('ParticlesCtrl', [
 	'$scope',
 	function($scope){
-		// Courtesy of StackOverflow user Tim Down
-		function hexToRgb(hex) {
-	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-	        return r + r + g + g + b + b;
-	    });
+		document.getElementsByTagName('body')[0].style.paddingTop = '0';
 
-	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	    var color = null;
-
-	    if (result){
-	    	var r = parseInt(result[1], 16);
-		    var g = parseInt(result[2], 16);
-		    var b = parseInt(result[3], 16);
-
-		    color = new Color(r, g, b, 255);
-	    }
-
-	    return color;
+		var ranges = document.getElementsByClassName('addedRange');
+		for (var i = 0; i < ranges.length; i++){
+			ranges[i].addEventListener('change', function(evt){
+				updateParticles();
+			});
 		}
 
-		console.log('aubrey donnelly: ' + RISING_PARTICLES_VALUE + ' ' + EXPANDING_PARTICLES_VALUE);
-		$scope.PARTICLE_BEHAVIOR_MAPPINGS = {
-		  'rising': ParticleBehavior.RISING,
-		  'expanding': ParticleBehavior.EXPANDING
-		};
+		document.getElementById('behaviorControl').addEventListener('change', function(evt){
+			updateParticles();
+		});
 
 		$scope.isControlsAreaVisible = false;
 		$scope.expandingValue = EXPANDING_PARTICLES_VALUE;
@@ -750,36 +735,13 @@ app.controller('ParticlesCtrl', [
 			createjs.Ticker.removeEventListener('tick', handleTick);
 			effect.destroy();
 
+			document.getElementsByTagName('body')[0].style.paddingTop = '50px';
+
 			var siteNav = document.getElementById('siteNav');
 			var accountNav = document.getElementById('accountNav');
 			var mainContentArea = document.getElementById('mainContentArea');
 			siteNav.style.display = 'block';
 			accountNav.style.display = 'block';
 			mainContentArea.setAttribute('class', 'col-md-6');
-		};
-
-		$scope.updateParticles = function(){
-			var baseColor = hexToRgb($scope.color);
-		  var colorChangeParts = [];
-		  if (baseColor.red > COLOR_DOMINANCE_THRESHOLD){
-		  	colorChangeParts.push(ColorPart.RED);
-		  }
-		  if (baseColor.green > COLOR_DOMINANCE_THRESHOLD){
-		  	colorChangeParts.push(ColorPart.GREEN);
-		  }
-		  if (baseColor.blue > COLOR_DOMINANCE_THRESHOLD){
-		  	colorChangeParts.push(ColorPart.BLUE);
-		  }
-		  console.log('huh ' + document.getElementById('behaviorControl').value);
-		  var particleCount = PARTICLE_COUNT_MAPPINGS[document.getElementById('countControl').value];
-		  var particleSize = PARTICLE_SIZE_MAPPINGS[document.getElementById('sizeControl').value];
-		  var speedRange = PARTICLE_SPEED_MAPPINGS[document.getElementById('speedControl').value];
-		  var airResistance = AIR_RESISTANCE_MAPPINGS[document.getElementById('resistanceControl').value];
-		  var windSpeed = WIND_MAPPINGS[document.getElementById('windControl').value];
-		  var behavior = $scope.PARTICLE_BEHAVIOR_MAPPINGS[document.getElementById('behaviorControl').value];
-		  console.log('double huh ' + $scope.PARTICLE_BEHAVIOR_MAPPINGS['expanding'] + ' --- ' + $scope.PARTICLE_BEHAVIOR_MAPPINGS[document.getElementById('behaviorControl').value] + ' *** ' + behavior);
-		  effect.destroy();
-		  effect = new MouseParticleEffect(particleCount, baseColor, colorChangeParts, particleSize, 1.5,
-		    speedRange, airResistance, windSpeed, behavior, stage, canvas);
 		};
 }]);
